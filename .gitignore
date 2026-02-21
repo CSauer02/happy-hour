@@ -25,3 +25,5 @@ yarn-error.log*
 .runtime/
 .claude/commands/
 .logs/
+.beads/
+AGENTS.md
