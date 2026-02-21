@@ -13,9 +13,15 @@ export default function VenueCard({
   isSelected,
   onSelect,
 }: VenueCardProps) {
-  const faviconUrl = venue.restaurant_url
-    ? `https://www.google.com/s2/favicons?domain=${new URL(venue.restaurant_url).hostname}&sz=32`
-    : null;
+  let faviconUrl: string | null = null;
+  if (venue.restaurant_url) {
+    try {
+      const hostname = new URL(venue.restaurant_url).hostname;
+      faviconUrl = `https://www.google.com/s2/favicons?domain=${encodeURIComponent(hostname)}&sz=32`;
+    } catch {
+      // invalid URL, skip favicon
+    }
+  }
 
   return (
     <div

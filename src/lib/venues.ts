@@ -44,6 +44,19 @@ function parseCSV(text: string): Record<string, string>[] {
   });
 }
 
+function safeUrl(url: string | undefined): string | null {
+  if (!url) return null;
+  try {
+    const parsed = new URL(url);
+    if (parsed.protocol === "https:" || parsed.protocol === "http:") {
+      return url;
+    }
+  } catch {
+    // invalid URL
+  }
+  return null;
+}
+
 function csvRowToVenue(row: Record<string, string>, id: number): Venue | null {
   const name = row["RestaurantName"]?.trim();
   const deal = row["Deal"]?.trim();
@@ -66,8 +79,8 @@ function csvRowToVenue(row: Record<string, string>, id: number): Venue | null {
     neighborhood: row["Neighborhood"]?.trim() || "Other",
     latitude: hasCoords ? lat : null,
     longitude: hasCoords ? lng : null,
-    restaurant_url: row["RestaurantURL"]?.trim() || null,
-    maps_url: row["MapsURL"]?.trim() || null,
+    restaurant_url: safeUrl(row["RestaurantURL"]?.trim()),
+    maps_url: safeUrl(row["MapsURL"]?.trim()),
     mon: (row["Mon"] || "").trim().toLowerCase() === "yes",
     tue: (row["Tue"] || "").trim().toLowerCase() === "yes",
     wed: (row["Wed"] || "").trim().toLowerCase() === "yes",
@@ -78,6 +91,9 @@ function csvRowToVenue(row: Record<string, string>, id: number): Venue | null {
 
 async function fetchFromCSV(): Promise<Venue[]> {
   const res = await fetch(CSV_URL, { next: { revalidate: 3600 } });
+  if (!res.ok) {
+    throw new Error(`CSV fetch failed: ${res.status} ${res.statusText}`);
+  }
   const text = await res.text();
   const rows = parseCSV(text);
 
