@@ -1,77 +1,35 @@
-# ATL Socializers Happy Hour
+# ATL Happy Hour
 
-This is a React implementation of the ATL Socializers Happy Hour website, which helps users find happy hour deals across Atlanta. The app displays happy hour venues on a map and allows filtering by day of the week or to see what's happening now.
+Atlanta's guide to the best happy hour deals. Filter by day, browse by neighborhood, and find deals happening right now.
 
-## Features
+## Tech Stack
 
-- Interactive Google Maps integration
-- Filter venues by day of the week
-- "Happening Now" toggle to show current happy hours
-- Mobile-responsive design
-- Venues grouped by neighborhood
-- Restaurant details including deals and external links
-- Dark mode support
+- **Next.js 15** (App Router, TypeScript)
+- **Tailwind CSS** with custom brand gradient
+- **Supabase** for data (falls back to Google Sheets CSV)
+- **Google Maps** via @vis.gl/react-google-maps
+- **Vercel** for deployment
 
-## Project Structure
+## Setup
 
-```
-atl-happy-hour-react/
-├── public/
-│   ├── favicon.ico
-│   ├── favicon.svg
-│   ├── favicon-96x96.png
-│   ├── apple-touch-icon.png
-│   ├── android-chrome-192x192.png
-│   ├── android-chrome-512x512.png
-│   ├── site.webmanifest
-│   └── index.html
-├── src/
-│   ├── components/
-│   │   ├── Header.js
-│   │   ├── Header.css
-│   │   ├── Sidebar.js
-│   │   ├── Sidebar.css
-│   │   ├── RestaurantCard.js
-│   │   ├── RestaurantCard.css
-│   │   ├── MapView.js
-│   │   ├── MapView.css
-│   │   ├── Footer.js
-│   │   └── Footer.css
-│   ├── App.js
-│   ├── App.css
-│   └── index.js
-└── package.json
+```bash
+npm install
+cp .env.example .env.local
+# Fill in your API keys in .env.local
+npm run dev
 ```
 
-## Installation
+## Environment Variables
 
-1. Clone the repository
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-3. Start the development server:
-   ```bash
-   npm start
-   ```
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `NEXT_PUBLIC_SUPABASE_URL` | No | Supabase project URL (falls back to CSV) |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | No | Supabase anon key |
+| `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` | No | Google Maps API key (map shows placeholder without it) |
 
-## Data Source
+## Database Setup
 
-The application fetches venue data from a Google Sheets CSV file. To update the data, modify the spreadsheet and ensure it contains the following columns:
-- RestaurantName
-- Neighborhood
-- Deal
-- RestaurantURL
-- MapsURL
-- Latitude
-- Longitude
-- Mon, Tue, Wed, Thu, Fri (with "yes" values to indicate availability)
-
-## Dependencies
-
-- React
-- PapaParse (for CSV parsing)
-- Google Maps JavaScript API
+Run `supabase/schema.sql` in the Supabase SQL Editor to create the venues table.
 
 ## License
 
