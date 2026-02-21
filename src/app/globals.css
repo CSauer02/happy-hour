@@ -1,0 +1,82 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --header-height: 64px;
+    --footer-height: 32px;
+  }
+
+  body {
+    @apply bg-gray-50 text-gray-900 antialiased;
+  }
+}
+
+@layer components {
+  .btn-day {
+    @apply px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-200
+           border border-white/30 text-white/80 hover:bg-white/20 hover:text-white;
+  }
+
+  .btn-day-active {
+    @apply bg-brand-yellow text-brand-purple font-bold border-brand-yellow shadow-md;
+  }
+
+  .venue-card {
+    @apply bg-white rounded-xl p-4 shadow-sm border border-gray-100
+           hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-pointer;
+  }
+
+  .venue-card-selected {
+    @apply ring-2 ring-brand-purple shadow-lg border-brand-purple;
+  }
+
+  .neighborhood-header {
+    @apply sticky top-0 z-10 bg-gray-50/95 backdrop-blur-sm px-4 py-2
+           flex items-center justify-between cursor-pointer
+           hover:bg-gray-100 transition-colors duration-150;
+  }
+}
+
+/* Google Maps overrides */
+.gm-style-iw {
+  padding: 0 !important;
+}
+
+.gm-style-iw-d {
+  overflow: hidden !important;
+}
+
+/* Rainbow bar */
+.rainbow-bar {
+  background: linear-gradient(
+    90deg,
+    #e40303 0%,
+    #ff8c00 16.67%,
+    #ffed00 33.33%,
+    #008026 50%,
+    #004dff 66.67%,
+    #750787 83.33%,
+    #e40303 100%
+  );
+  height: 4px;
+}
+
+/* Scrollbar styling */
+.sidebar-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+.sidebar-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sidebar-scroll::-webkit-scrollbar-thumb {
+  background: rgba(117, 7, 135, 0.2);
+  border-radius: 3px;
+}
+
+.sidebar-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(117, 7, 135, 0.4);
+}
