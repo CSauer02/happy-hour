@@ -382,32 +382,40 @@ export default function DealUpdaterApp() {
   // Welcome View
   if (currentView === "welcome") {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-pink-200 via-purple-200 to-blue-200 flex flex-col items-center justify-center p-6">
-        <div className="bg-white rounded-3xl shadow-2xl p-8 max-w-sm w-full text-center border-4 border-pink-300">
-          <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-r from-pink-200 to-purple-200 rounded-full flex items-center justify-center">
-            <span className="text-3xl">🍻</span>
+      <div className="min-h-screen bg-gradient-to-br from-pink-200 via-purple-200 to-blue-200 flex flex-col items-center justify-center p-6 relative overflow-hidden">
+        {/* Floating sparkles */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          <div className="absolute top-[8%] left-[12%] text-4xl animate-bounce opacity-30" style={{ animationDelay: "0s", animationDuration: "3s" }}>&#x2728;</div>
+          <div className="absolute top-[15%] right-[18%] text-3xl animate-bounce opacity-25" style={{ animationDelay: "1.2s", animationDuration: "4s" }}>&#x1f31f;</div>
+          <div className="absolute bottom-[20%] left-[8%] text-3xl animate-bounce opacity-20" style={{ animationDelay: "0.5s", animationDuration: "3.5s" }}>&#x1f984;</div>
+          <div className="absolute bottom-[30%] right-[12%] text-4xl animate-bounce opacity-25" style={{ animationDelay: "2s", animationDuration: "4.5s" }}>&#x2728;</div>
+        </div>
+
+        <div className="bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl p-8 max-w-sm w-full text-center border-4 border-pink-300 relative z-10">
+          <div className="w-24 h-24 mx-auto mb-6 bg-gradient-to-r from-pink-200 via-purple-200 to-blue-200 rounded-full flex items-center justify-center shadow-lg">
+            <span className="text-5xl">&#x1f984;</span>
           </div>
 
-          <h1 className="text-2xl font-bold bg-gradient-to-r from-pink-600 to-purple-600 bg-clip-text text-transparent mb-4">
-            Happy Hour Deal Updater
+          <h1 className="text-2xl font-bold bg-gradient-to-r from-pink-600 via-purple-600 to-blue-600 bg-clip-text text-transparent mb-4">
+            Deal Updater &#x2728;
           </h1>
           <p className="text-gray-600 text-sm mb-8 leading-relaxed">
-            Help build Atlanta&apos;s most complete happy hour database! Add restaurant
-            deals using text descriptions and menu photos.
+            Welcome, member! Help build Atlanta&apos;s most magical happy hour database.
+            Add restaurant deals using text descriptions and menu photos.
           </p>
 
           <button
             onClick={() => goToView("home")}
-            className="w-full bg-gradient-to-r from-pink-500 to-purple-500 text-white py-3 rounded-2xl font-semibold hover:from-pink-600 hover:to-purple-600 transition-all transform hover:scale-105 shadow-lg"
+            className="w-full bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 text-white py-3 rounded-2xl font-semibold hover:from-pink-600 hover:via-purple-600 hover:to-blue-600 transition-all transform hover:scale-105 shadow-lg"
           >
-            Get Started
+            &#x1f984; Get Started
           </button>
 
           <a
             href="/"
             className="inline-block mt-4 text-sm text-purple-600 hover:text-purple-800 transition-colors"
           >
-            Back to Happy Hour Deals
+            &#x2190; Back to Happy Hour Deals
           </a>
         </div>
       </div>
@@ -1251,12 +1259,12 @@ export default function DealUpdaterApp() {
             <div className="absolute inset-0 bg-gradient-to-br from-pink-100/50 via-purple-100/50 to-blue-100/50 animate-pulse" />
 
             <div className="relative z-10">
-              <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-r from-pink-300 to-purple-300 rounded-full flex items-center justify-center shadow-lg">
-                <Check className="text-white" size={40} />
+              <div className="w-24 h-24 mx-auto mb-6 bg-gradient-to-r from-pink-300 via-purple-300 to-blue-300 rounded-full flex items-center justify-center shadow-lg">
+                <span className="text-5xl">&#x1f984;</span>
               </div>
 
-              <h2 className="text-2xl font-bold bg-gradient-to-r from-pink-600 to-purple-600 bg-clip-text text-transparent mb-4">
-                Success!
+              <h2 className="text-2xl font-bold bg-gradient-to-r from-pink-600 via-purple-600 to-blue-600 bg-clip-text text-transparent mb-4">
+                Magical! &#x2728;
               </h2>
               <p className="text-gray-600 text-sm mb-6">
                 {matchedEntry

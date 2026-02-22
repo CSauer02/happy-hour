@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { DayFilter, DAYS, DAY_LABELS, getTodayKey } from "@/lib/types";
 
 interface HeaderProps {
@@ -45,26 +46,37 @@ export default function Header({
             ))}
           </nav>
 
-          {/* Happening Now Toggle */}
-          {isWeekday && (
-            <button
-              onClick={onHappeningNowToggle}
-              className={`shrink-0 flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ${
-                happeningNow
-                  ? "bg-brand-yellow text-brand-purple shadow-md"
-                  : "border border-white/30 text-white/80 hover:bg-white/20"
-              }`}
-              aria-pressed={happeningNow}
-            >
-              <span
-                className={`inline-block w-2 h-2 rounded-full ${
-                  happeningNow ? "bg-brand-purple animate-pulse" : "bg-white/60"
+          <div className="flex items-center gap-2 shrink-0">
+            {/* Happening Now Toggle */}
+            {isWeekday && (
+              <button
+                onClick={onHappeningNowToggle}
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ${
+                  happeningNow
+                    ? "bg-brand-yellow text-brand-purple shadow-md"
+                    : "border border-white/30 text-white/80 hover:bg-white/20"
                 }`}
-              />
-              <span className="hidden md:inline">Happening Now</span>
-              <span className="md:hidden">Now</span>
-            </button>
-          )}
+                aria-pressed={happeningNow}
+              >
+                <span
+                  className={`inline-block w-2 h-2 rounded-full ${
+                    happeningNow ? "bg-brand-purple animate-pulse" : "bg-white/60"
+                  }`}
+                />
+                <span className="hidden md:inline">Happening Now</span>
+                <span className="md:hidden">Now</span>
+              </button>
+            )}
+
+            {/* Members Sign In */}
+            <Link
+              href="/deal-updater"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-200 bg-white/15 border border-white/30 text-white hover:bg-white/25 hover:scale-105 backdrop-blur-sm"
+            >
+              <span className="text-base">&#x1f984;</span>
+              <span className="hidden md:inline">Members</span>
+            </Link>
+          </div>
         </div>
       </div>
     </header>
