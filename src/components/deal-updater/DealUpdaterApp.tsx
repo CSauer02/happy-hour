@@ -510,12 +510,12 @@ export default function DealUpdaterApp() {
           {/* Days */}
           <div className="bg-white rounded-2xl p-4 shadow-md border-2 border-blue-200">
             <label className="text-xs font-semibold text-blue-600 uppercase tracking-wide mb-2 block">Days Available</label>
-            <div className="grid grid-cols-7 gap-1.5">
+            <div className="grid grid-cols-7 gap-1">
               {(["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"] as const).map((day) => (
                 <button
                   key={day}
                   onClick={() => toggleDay(day)}
-                  className={`py-2 rounded-xl text-xs font-bold transition-all ${
+                  className={`py-1.5 sm:py-2 rounded-lg sm:rounded-xl text-[10px] sm:text-xs font-bold transition-all ${
                     extractedData.days[day]
                       ? "bg-gradient-to-b from-pink-500 to-purple-500 text-white shadow-md"
                       : "bg-gray-100 text-gray-400 hover:bg-gray-200"
@@ -532,7 +532,7 @@ export default function DealUpdaterApp() {
         </div>
 
         {/* Fixed bottom submit */}
-        <div className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-sm border-t-2 border-purple-200 p-4 space-y-2">
+        <div className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-sm border-t-2 border-purple-200 p-4 pb-[max(1rem,env(safe-area-inset-bottom))] space-y-2">
           <button
             onClick={handleSubmit}
             className="w-full bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 text-white py-3.5 rounded-2xl font-bold text-lg hover:from-pink-600 hover:via-purple-600 hover:to-blue-600 transition-all shadow-xl flex items-center justify-center gap-2"

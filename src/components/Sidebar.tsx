@@ -88,7 +88,7 @@ export default function Sidebar({
 
   if (isLoading) {
     return (
-      <aside className="w-full md:w-80 lg:w-96 shrink-0 bg-gray-50 border-r border-gray-200 overflow-hidden">
+      <aside className="w-full max-h-[40vh] md:max-h-none md:w-80 lg:w-96 shrink-0 bg-gray-50 border-r border-gray-200 overflow-hidden">
         <div className="p-4 space-y-4">
           {[...Array(5)].map((_, i) => (
             <div key={i} className="animate-pulse">
@@ -105,7 +105,7 @@ export default function Sidebar({
   }
 
   return (
-    <aside className="w-full md:w-80 lg:w-96 shrink-0 bg-gray-50 border-r border-gray-200 flex flex-col overflow-hidden">
+    <aside className="w-full max-h-[40vh] md:max-h-none md:w-80 lg:w-96 shrink-0 bg-gray-50 border-r border-gray-200 md:border-b-0 border-b flex flex-col overflow-hidden">
       <div className="px-4 py-2 border-b border-gray-200 bg-white/80 backdrop-blur-sm">
         <p className="text-sm text-gray-500 font-medium">
           {venues.length} venue{venues.length !== 1 ? "s" : ""}

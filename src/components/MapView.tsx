@@ -213,7 +213,7 @@ export default function MapView(props: MapViewProps) {
   }
 
   return (
-    <div className="flex-1 relative">
+    <div className="flex-1 min-h-[50vh] md:min-h-0 relative">
       <APIProvider apiKey={apiKey}>
         <Map
           defaultCenter={ATL_CENTER}

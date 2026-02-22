@@ -15,7 +15,7 @@
 
 @layer components {
   .btn-day {
-    @apply px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-200
+    @apply px-2 sm:px-3 py-1 sm:py-1.5 rounded-full text-xs sm:text-sm font-medium transition-all duration-200
            border border-white/30 text-white/80 hover:bg-white/20 hover:text-white;
   }
 

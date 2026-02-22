@@ -32,7 +32,7 @@ export default function Header({
           </div>
 
           {/* Day Filters */}
-          <nav className="flex items-center gap-1.5 flex-wrap justify-center">
+          <nav className="flex items-center gap-1 sm:gap-1.5 flex-wrap justify-center">
             {DAYS.map((day) => (
               <button
                 key={day}
