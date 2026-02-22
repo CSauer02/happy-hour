@@ -28,3 +28,5 @@ yarn-error.log*
 .logs/
 .beads/
 AGENTS.md
+.vercel
+.env*.local
