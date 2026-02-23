@@ -120,6 +120,13 @@ export default function Header({
 
             {userEmail ? (
               <>
+                <Link
+                  href="/deal-updater"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-200 bg-white/15 border border-white/30 text-white hover:bg-white/25 hover:scale-105 backdrop-blur-sm"
+                >
+                  <span className="hidden md:inline">Deal Updater</span>
+                  <span className="md:hidden">+</span>
+                </Link>
                 {isAdmin && (
                   <Link
                     href="/admin"
