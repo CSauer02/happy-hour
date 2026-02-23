@@ -33,3 +33,4 @@ supabase/.temp/
 AGENTS.md
 .vercel
 .env*.local
+tsconfig.tsbuildinfo
