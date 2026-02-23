@@ -59,14 +59,16 @@ export async function POST(request: Request) {
       try {
         const query = encodeURIComponent(`${extractedData.restaurant_name} Atlanta`);
         const textSearchRes = await fetch(
-          `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${query}&key=${apiKey}`
+          `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${query}&key=${apiKey}`,
+          { headers: { Referer: 'https://socializers-happyhour-frontend.vercel.app/' } }
         );
         const textSearchData = await textSearchRes.json();
         const placeId = textSearchData?.results?.[0]?.place_id;
 
         if (placeId) {
           const detailsRes = await fetch(
-            `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&fields=geometry,website,formatted_address,address_components,url&key=${apiKey}`
+            `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&fields=geometry,website,formatted_address,address_components,url&key=${apiKey}`,
+            { headers: { Referer: 'https://socializers-happyhour-frontend.vercel.app/' } }
           );
           const detailsData = await detailsRes.json();
           const result = detailsData?.result;
