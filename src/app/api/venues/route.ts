@@ -22,6 +22,8 @@ export async function GET() {
       } as DaySchedule,
       neighborhood: v.neighborhood,
       last_updated: new Date().toISOString(),
+      latitude: v.latitude,
+      longitude: v.longitude,
     }));
 
     return NextResponse.json(deals);

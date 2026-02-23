@@ -21,6 +21,7 @@ export interface ExtractedDeal {
   days: DaySchedule;
   confidence: number;
   google_place: GooglePlace;
+  matched_venue_id?: number | null;
 }
 
 export interface ExistingDeal {
@@ -30,6 +31,8 @@ export interface ExistingDeal {
   days: DaySchedule;
   neighborhood: string;
   last_updated: string;
+  latitude?: number | null;
+  longitude?: number | null;
 }
 
 export type DealUpdaterView =

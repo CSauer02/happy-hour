@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const { images, textInput, restaurantName } = await req.json();
+  const { images, textInput, restaurantName, venues, location } = await req.json();
 
   // Build Claude message content
   const content: Array<Record<string, unknown>> = [];
@@ -74,7 +74,20 @@ Focus on:
 - Accurate times (like "4-6 PM" or "Monday-Friday 5-7 PM")
 - Specific prices and items
 - Which days the deal applies to
-- Any restrictions or conditions
+- Any restrictions or conditions${venues && Array.isArray(venues) && venues.length > 0 ? `
+
+You also need to identify if this restaurant already exists in our database.
+
+User location: ${location ? `${location.lat}, ${location.lng} (from ${location.source})` : "unknown"}
+
+Existing venues (JSON):
+${JSON.stringify(venues.map((v: { id: string; restaurant_name: string; neighborhood: string; latitude?: number | null; longitude?: number | null }) => ({ id: v.id, name: v.restaurant_name, neighborhood: v.neighborhood, lat: v.latitude, lng: v.longitude })))}
+
+Add a "matched_venue_id" field to your JSON response:
+- Set it to the numeric id of the best matching existing venue if confidence is high (same restaurant, possibly different name format)
+- Set it to null if this appears to be a new restaurant not in the list
+- Use the name semantics AND proximity (if location available) to determine match
+- Do NOT match on superficial word overlap — only match if you are confident it is the same physical restaurant` : ""}
 
 DO NOT OUTPUT ANYTHING OTHER THAN VALID JSON.`;
 

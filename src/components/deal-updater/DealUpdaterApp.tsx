@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useCallback, useEffect } from "react";
+import exifr from "exifr";
 import {
   Camera,
   Check,
@@ -44,6 +45,10 @@ export default function DealUpdaterApp() {
   const [existingEntries, setExistingEntries] = useState<ExistingDeal[]>([]);
   const [matchedEntry, setMatchedEntry] = useState<ExistingDeal | null>(null);
 
+  // Location state
+  const [photoGps, setPhotoGps] = useState<{ lat: number; lng: number } | null>(null);
+  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number; source: string } | null>(null);
+
   // Processing animation
   const [magicMsgIdx, setMagicMsgIdx] = useState(0);
   const [processingDots, setProcessingDots] = useState("");
@@ -74,6 +79,16 @@ export default function DealUpdaterApp() {
       .catch(() => {});
   }, []);
 
+  // Request user geolocation on mount
+  useEffect(() => {
+    if ("geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => setUserLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude, source: "gps" }),
+        () => {} // permission denied — silent fail
+      );
+    }
+  }, []);
+
   // Convert file to base64
   const fileToBase64 = (file: File): Promise<string> =>
     new Promise((resolve, reject) => {
@@ -84,11 +99,20 @@ export default function DealUpdaterApp() {
     });
 
   // Handle image selection (camera or gallery)
-  const handleImageCapture = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageCapture = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files || []);
     for (const file of files) {
       setCapturedImages((prev) => [...prev, URL.createObjectURL(file)]);
       setImageFiles((prev) => [...prev, file]);
+      // Extract GPS from EXIF if available (JPEG/HEIC/TIFF only)
+      try {
+        const gps = await exifr.gps(file);
+        if (gps?.latitude && gps?.longitude) {
+          setPhotoGps({ lat: gps.latitude, lng: gps.longitude });
+        }
+      } catch {
+        // No EXIF GPS — ignore (screenshots, PNGs, etc.)
+      }
     }
     event.target.value = "";
   };
@@ -113,6 +137,11 @@ export default function DealUpdaterApp() {
         images.push({ base64, mediaType: file.type || "image/jpeg" });
       }
 
+      // Location priority: EXIF GPS > user geolocation > null
+      const location = photoGps
+        ? { lat: photoGps.lat, lng: photoGps.lng, source: "exif" }
+        : userLocation;
+
       const res = await fetch("/api/extract-deal", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -120,6 +149,8 @@ export default function DealUpdaterApp() {
           images,
           textInput: pasteText,
           restaurantName: "", // AI figures it out
+          venues: existingEntries,
+          location,
         }),
       });
 
@@ -131,12 +162,10 @@ export default function DealUpdaterApp() {
       const extracted: ExtractedDeal = await res.json();
       setExtractedData(extracted);
 
-      // Auto-match against existing entries
-      const match = existingEntries.find((entry) => {
-        const extractedWords = extracted.restaurant_name.toLowerCase().split(/\s+/);
-        const entryWords = entry.restaurant_name.toLowerCase().split(/\s+/);
-        return extractedWords.some((w) => w.length > 2 && entryWords.some((ew) => ew.includes(w) || w.includes(ew)));
-      });
+      // Match against existing entries using AI-returned id
+      const match = extracted.matched_venue_id != null
+        ? existingEntries.find((v) => v.id === String(extracted.matched_venue_id))
+        : null;
       setMatchedEntry(match || null);
 
       setView("result");
@@ -145,7 +174,7 @@ export default function DealUpdaterApp() {
       setError(err instanceof Error ? err.message : "Something went wrong");
       setView("capture");
     }
-  }, [imageFiles, pasteText, existingEntries]);
+  }, [imageFiles, pasteText, existingEntries, photoGps, userLocation]);
 
   // Submit correction feedback to AI
   const submitCorrection = useCallback(async (feedback: string) => {
@@ -186,6 +215,7 @@ export default function DealUpdaterApp() {
     setMatchedEntry(null);
     setIsEditing(false);
     setError(null);
+    setPhotoGps(null);
   };
 
   // Day toggle in result view
