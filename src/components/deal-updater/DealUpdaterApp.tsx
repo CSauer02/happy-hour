@@ -44,6 +44,7 @@ export default function DealUpdaterApp() {
   // Matching state
   const [existingEntries, setExistingEntries] = useState<ExistingDeal[]>([]);
   const [matchedEntry, setMatchedEntry] = useState<ExistingDeal | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Location state
   const [photoGps, setPhotoGps] = useState<{ lat: number; lng: number } | null>(null);
@@ -200,9 +201,30 @@ export default function DealUpdaterApp() {
   }, [extractedData]);
 
   // Final submit
-  const handleSubmit = () => {
-    setView("success");
-    setTimeout(resetApp, 3000);
+  const handleSubmit = async () => {
+    if (!extractedData) return;
+    setIsSubmitting(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/venues", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          extractedData,
+          matchedVenueId: matchedEntry?.id ?? null,
+        }),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || `Save failed: ${res.status}`);
+      }
+      setView("success");
+      setTimeout(resetApp, 3000);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to save deal");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const resetApp = () => {
@@ -457,6 +479,13 @@ export default function DealUpdaterApp() {
         </div>
 
         <div className="flex-1 p-4 space-y-4 pb-36">
+          {/* Submit error */}
+          {error && (
+            <div className="bg-red-50 border-2 border-red-200 rounded-2xl p-4 text-red-700 text-sm flex items-center justify-between">
+              <span>{error}</span>
+              <button onClick={() => setError(null)} className="ml-2"><X size={16} /></button>
+            </div>
+          )}
           {/* Confidence indicator */}
           <div className="flex items-center gap-3 bg-white/80 rounded-2xl p-3 border-2 border-purple-200">
             <span className="text-2xl">&#x1f984;</span>
@@ -565,10 +594,11 @@ export default function DealUpdaterApp() {
         <div className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-sm border-t-2 border-purple-200 p-4 pb-[max(1rem,env(safe-area-inset-bottom))] space-y-2">
           <button
             onClick={handleSubmit}
-            className="w-full bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 text-white py-3.5 rounded-2xl font-bold text-lg hover:from-pink-600 hover:via-purple-600 hover:to-blue-600 transition-all shadow-xl flex items-center justify-center gap-2"
+            disabled={isSubmitting}
+            className="w-full bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 text-white py-3.5 rounded-2xl font-bold text-lg hover:from-pink-600 hover:via-purple-600 hover:to-blue-600 transition-all shadow-xl flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
           >
             <Check size={22} />
-            <span>{matchedEntry ? "Update This Deal" : "Add New Deal"}</span>
+            <span>{isSubmitting ? "Saving..." : matchedEntry ? "Update This Deal" : "Add New Deal"}</span>
             <span>&#x1f984;</span>
           </button>
           <div className="grid grid-cols-2 gap-2">
