@@ -10,25 +10,40 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [isSignUp, setIsSignUp] = useState(false);
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    setSuccess("");
     setSubmitting(true);
 
     try {
       const supabase = createClient();
-      const { error: authError } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
 
-      if (authError) {
-        setError(authError.message || "Invalid credentials");
+      if (isSignUp) {
+        const { error: authError } = await supabase.auth.signUp({
+          email,
+          password,
+        });
+        if (authError) {
+          setError(authError.message || "Sign up failed");
+        } else {
+          setSuccess("Check your email for a confirmation link!");
+        }
       } else {
-        router.push("/deal-updater");
-        router.refresh();
+        const { error: authError } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+        if (authError) {
+          setError(authError.message || "Invalid credentials");
+        } else {
+          router.push("/deal-updater");
+          router.refresh();
+        }
       }
     } catch {
       setError("An unexpected error occurred");
@@ -42,11 +57,13 @@ export default function LoginPage() {
       <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-8 w-full max-w-md">
         <div className="text-center mb-8">
           <div className="text-5xl mb-3">🦄</div>
-          <h1 className="text-2xl font-bold text-purple-800">Members Sign In</h1>
+          <h1 className="text-2xl font-bold text-purple-800">
+            {isSignUp ? "Create Account" : "Members Sign In"}
+          </h1>
           <p className="text-purple-600 text-sm mt-1">ATL Happy Hour</p>
         </div>
 
-        <form onSubmit={handleLogin} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label
               htmlFor="email"
@@ -89,16 +106,34 @@ export default function LoginPage() {
             </p>
           )}
 
+          {success && (
+            <p className="text-green-700 text-sm bg-green-50 rounded-lg px-3 py-2">
+              {success}
+            </p>
+          )}
+
           <button
             type="submit"
             disabled={submitting}
             className="w-full py-2.5 px-4 bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 text-white font-semibold rounded-xl hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {submitting ? "Signing in…" : "Sign In"}
+            {submitting
+              ? isSignUp ? "Creating account…" : "Signing in…"
+              : isSignUp ? "Create Account" : "Sign In"}
           </button>
         </form>
 
-        <div className="mt-6 text-center">
+        <div className="mt-4 text-center">
+          <button
+            type="button"
+            onClick={() => { setIsSignUp(!isSignUp); setError(""); setSuccess(""); }}
+            className="text-sm text-purple-600 hover:text-purple-800 transition-colors"
+          >
+            {isSignUp ? "Already have an account? Sign in" : "Don't have an account? Sign up"}
+          </button>
+        </div>
+
+        <div className="mt-2 text-center">
           <Link
             href="/"
             className="text-sm text-purple-600 hover:text-purple-800 transition-colors"
