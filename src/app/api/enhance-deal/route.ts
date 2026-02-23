@@ -1,10 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
+import { createClient } from "@/lib/supabase-server";
 
 const CLAUDE_API_URL = "https://api.anthropic.com/v1/messages";
 
 export async function POST(req: NextRequest) {
-  const auth = req.cookies.get("deal-updater-auth");
-  if (!auth || auth.value !== "1") {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
