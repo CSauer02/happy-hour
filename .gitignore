@@ -22,6 +22,9 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
+# Supabase
+supabase/.temp/
+
 # Gas Town (added by gt)
 .runtime/
 .claude/commands/
