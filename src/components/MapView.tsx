@@ -157,32 +157,19 @@ function MapContent({
           onCloseClick={onMapClick}
           pixelOffset={[0, -35]}
         >
-          <div className="p-2 max-w-[220px]">
-            <div className="rainbow-bar mb-2 rounded" />
-            <h3 className="font-bold text-brand-purple text-sm">
+          <div className="px-1.5 py-1 max-w-[200px]">
+            <h3 className="font-bold text-brand-purple text-xs leading-tight">
               {selectedVenue.restaurant_name}
             </h3>
-            <p className="text-xs text-gray-600 mt-1">{selectedVenue.deal}</p>
-            <div className="flex gap-2 mt-2">
+            <p className="text-[10px] text-gray-600 mt-0.5 leading-snug line-clamp-2">{selectedVenue.deal}</p>
+            <div className="flex gap-2 mt-1">
               {selectedVenue.restaurant_url && (
-                <a
-                  href={selectedVenue.restaurant_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-xs text-brand-purple hover:underline"
-                >
-                  Website
-                </a>
+                <a href={selectedVenue.restaurant_url} target="_blank" rel="noopener noreferrer"
+                  className="text-[10px] text-brand-purple font-medium hover:underline">Site</a>
               )}
               {selectedVenue.maps_url && (
-                <a
-                  href={selectedVenue.maps_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-xs text-brand-purple hover:underline"
-                >
-                  Directions
-                </a>
+                <a href={selectedVenue.maps_url} target="_blank" rel="noopener noreferrer"
+                  className="text-[10px] text-brand-purple font-medium hover:underline">Go</a>
               )}
             </div>
           </div>

@@ -1,8 +1,10 @@
 "use client";
 
-import { useState, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
+import Link from "next/link";
 import type { Venue, DayFilter } from "@/lib/types";
 import { getTodayKey } from "@/lib/types";
+import { createClient } from "@/lib/supabase-browser";
 import Header from "./Header";
 import Sidebar, { VenueList } from "./Sidebar";
 import MapView from "./MapView";
@@ -17,20 +19,28 @@ export default function HappyHourApp({ initialVenues }: HappyHourAppProps) {
   const [activeDay, setActiveDay] = useState<DayFilter>("all");
   const [happeningNow, setHappeningNow] = useState(false);
   const [selectedVenue, setSelectedVenue] = useState<Venue | null>(null);
-  const [selectedNeighborhood, setSelectedNeighborhood] = useState<
-    string | null
-  >(null);
+  const [selectedNeighborhood, setSelectedNeighborhood] = useState<string | null>(null);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
 
-  // Filter venues by day
+  // Check auth state for FAB
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setUserEmail(user?.email ?? null);
+    });
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUserEmail(session?.user?.email ?? null);
+    });
+    return () => subscription.unsubscribe();
+  }, []);
+
   const filteredVenues = useMemo(() => {
     let filtered = initialVenues;
-
     if (activeDay !== "all") {
       filtered = filtered.filter(
         (v) => v[activeDay as keyof Pick<Venue, "mon" | "tue" | "wed" | "thu" | "fri">]
       );
     }
-
     if (happeningNow) {
       const todayKey = getTodayKey();
       if (todayKey) {
@@ -39,28 +49,20 @@ export default function HappyHourApp({ initialVenues }: HappyHourAppProps) {
         );
       }
     }
-
     return filtered;
   }, [initialVenues, activeDay, happeningNow]);
 
   const handleDayChange = useCallback(
     (day: DayFilter) => {
-      if (day === "all" && happeningNow) {
-        setHappeningNow(false);
-      }
-
+      if (day === "all" && happeningNow) setHappeningNow(false);
       if (day === activeDay && day !== "all") {
         setActiveDay("all");
         if (happeningNow) setHappeningNow(false);
       } else {
         setActiveDay(day);
-
         const todayKey = getTodayKey();
-        if (day === todayKey && !happeningNow) {
-          setHappeningNow(true);
-        } else if (day !== "all" && day !== todayKey && happeningNow) {
-          setHappeningNow(false);
-        }
+        if (day === todayKey && !happeningNow) setHappeningNow(true);
+        else if (day !== "all" && day !== todayKey && happeningNow) setHappeningNow(false);
       }
     },
     [activeDay, happeningNow]
@@ -69,12 +71,9 @@ export default function HappyHourApp({ initialVenues }: HappyHourAppProps) {
   const handleHappeningNowToggle = useCallback(() => {
     const newState = !happeningNow;
     setHappeningNow(newState);
-
     if (newState) {
       const todayKey = getTodayKey();
-      if (todayKey && activeDay !== todayKey) {
-        setActiveDay(todayKey);
-      }
+      if (todayKey && activeDay !== todayKey) setActiveDay(todayKey);
     } else {
       setActiveDay("all");
     }
@@ -82,14 +81,9 @@ export default function HappyHourApp({ initialVenues }: HappyHourAppProps) {
 
   const handleVenueSelect = useCallback(
     (id: number | null) => {
-      if (id === null) {
-        setSelectedVenue(null);
-        return;
-      }
-
+      if (id === null) { setSelectedVenue(null); return; }
       const venue = initialVenues.find((v) => v.id === id) ?? null;
       setSelectedVenue(venue);
-
       if (venue?.neighborhood && venue.neighborhood !== selectedNeighborhood) {
         setSelectedNeighborhood(venue.neighborhood);
       }
@@ -99,9 +93,7 @@ export default function HappyHourApp({ initialVenues }: HappyHourAppProps) {
 
   const handleNeighborhoodSelect = useCallback(
     (neighborhood: string | null) => {
-      if (neighborhood === null && selectedVenue) {
-        setSelectedVenue(null);
-      }
+      if (neighborhood === null && selectedVenue) setSelectedVenue(null);
       setSelectedNeighborhood(neighborhood);
     },
     [selectedVenue]
@@ -112,7 +104,8 @@ export default function HappyHourApp({ initialVenues }: HappyHourAppProps) {
   }, []);
 
   return (
-    <div className="flex flex-col h-screen">
+    <div className="flex flex-col h-[100dvh]">
+      {/* Desktop header — hidden on mobile */}
       <Header
         activeDay={activeDay}
         happeningNow={happeningNow}
@@ -120,13 +113,12 @@ export default function HappyHourApp({ initialVenues }: HappyHourAppProps) {
         onHappeningNowToggle={handleHappeningNowToggle}
       />
 
-      {/* Main content area below fixed header */}
+      {/* Main content */}
       <div
-        className="flex flex-1 overflow-hidden"
-        style={{ marginTop: "calc(var(--header-height) + 3px)" }}
+        className="flex flex-1 overflow-hidden md:mt-[calc(var(--header-height)+3px)]"
       >
-        {/* Desktop: sidebar + map side by side */}
         <div className="flex flex-row w-full h-full">
+          {/* Desktop sidebar */}
           <Sidebar
             venues={filteredVenues}
             selectedVenue={selectedVenue}
@@ -135,6 +127,7 @@ export default function HappyHourApp({ initialVenues }: HappyHourAppProps) {
             onNeighborhoodSelect={handleNeighborhoodSelect}
             isLoading={false}
           />
+          {/* Map — full screen on mobile, flex-1 on desktop */}
           <MapView
             venues={initialVenues}
             filteredVenues={filteredVenues}
@@ -146,8 +139,15 @@ export default function HappyHourApp({ initialVenues }: HappyHourAppProps) {
         </div>
       </div>
 
-      {/* Mobile: bottom sheet over full-screen map */}
-      <BottomSheet venueCount={filteredVenues.length}>
+      {/* Mobile bottom sheet with day filters */}
+      <BottomSheet
+        venueCount={filteredVenues.length}
+        activeDay={activeDay}
+        happeningNow={happeningNow}
+        onDayChange={handleDayChange}
+        onHappeningNowToggle={handleHappeningNowToggle}
+        selectedVenueId={selectedVenue?.id ?? null}
+      >
         <VenueList
           venues={filteredVenues}
           selectedVenue={selectedVenue}
@@ -157,7 +157,16 @@ export default function HappyHourApp({ initialVenues }: HappyHourAppProps) {
         />
       </BottomSheet>
 
-      {/* Footer — hidden on mobile (bottom sheet covers it) */}
+      {/* Mobile FAB — always visible, always accessible */}
+      <Link
+        href={userEmail ? "/deal-updater" : "/login"}
+        className="md:hidden fixed right-4 bottom-28 z-50 w-12 h-12 rounded-full bg-brand-gradient shadow-lg flex items-center justify-center text-white text-xl hover:scale-110 transition-transform active:scale-95"
+        aria-label={userEmail ? "Add deal" : "Sign in"}
+      >
+        {userEmail ? "+" : <span className="text-sm">&#x1f984;</span>}
+      </Link>
+
+      {/* Desktop footer */}
       <div className="hidden md:block">
         <Footer />
       </div>

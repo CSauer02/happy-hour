@@ -4,20 +4,23 @@
 
 @layer base {
   :root {
-    --header-height: 48px;
-    --footer-height: 28px;
+    --header-height: 44px;
+    --footer-height: 24px;
   }
 
-  body {
+  html, body {
     @apply bg-gray-50 text-gray-900 antialiased;
+    /* Prevent overscroll bounce on iOS */
+    overscroll-behavior: none;
   }
 }
 
 @layer components {
+  /* Desktop day filter buttons */
   .btn-day {
-    @apply px-2 py-0.5 rounded-full text-xs font-medium transition-all duration-200
+    @apply px-2.5 py-1 rounded-full text-xs font-medium transition-all duration-200
            border border-white/30 text-white/80 hover:bg-white/20 hover:text-white
-           min-h-[44px] min-w-[44px] flex items-center justify-center;
+           min-h-[36px] flex items-center justify-center whitespace-nowrap;
   }
 
   .btn-day-active {
@@ -39,79 +42,28 @@
            hover:bg-gray-100 transition-colors duration-150;
   }
 
-  /* Hide scrollbar on day strip */
-  .scrollbar-hide::-webkit-scrollbar {
-    display: none;
-  }
-  .scrollbar-hide {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-  }
+  .scrollbar-hide::-webkit-scrollbar { display: none; }
+  .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
 }
 
-/* Google Maps overrides */
-.gm-style-iw {
-  padding: 0 !important;
-}
-
-.gm-style-iw-d {
-  overflow: hidden !important;
-}
+/* Google Maps InfoWindow — kill all default padding */
+.gm-style-iw { padding: 0 !important; }
+.gm-style-iw-d { overflow: hidden !important; }
+.gm-style-iw-c { padding: 0 !important; }
 
 /* Rainbow bar */
 .rainbow-bar {
-  background: linear-gradient(
-    90deg,
-    #e40303 0%,
-    #ff8c00 16.67%,
-    #ffed00 33.33%,
-    #008026 50%,
-    #004dff 66.67%,
-    #750787 83.33%,
-    #e40303 100%
-  );
+  background: linear-gradient(90deg, #e40303 0%, #ff8c00 16.67%, #ffed00 33.33%, #008026 50%, #004dff 66.67%, #750787 83.33%, #e40303 100%);
   height: 3px;
 }
 
-/* Scrollbar styling */
-.sidebar-scroll::-webkit-scrollbar {
-  width: 6px;
-}
+/* Sidebar scrollbar */
+.sidebar-scroll::-webkit-scrollbar { width: 4px; }
+.sidebar-scroll::-webkit-scrollbar-track { background: transparent; }
+.sidebar-scroll::-webkit-scrollbar-thumb { background: rgba(117, 7, 135, 0.15); border-radius: 2px; }
+.sidebar-scroll::-webkit-scrollbar-thumb:hover { background: rgba(117, 7, 135, 0.3); }
 
-.sidebar-scroll::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.sidebar-scroll::-webkit-scrollbar-thumb {
-  background: rgba(117, 7, 135, 0.2);
-  border-radius: 3px;
-}
-
-.sidebar-scroll::-webkit-scrollbar-thumb:hover {
-  background: rgba(117, 7, 135, 0.4);
-}
-
-/* Landscape phone: compact header, hide bottom sheet peek text */
+/* Landscape phones — even more compact */
 @media (orientation: landscape) and (max-height: 500px) {
-  :root {
-    --header-height: 40px;
-  }
-
-  .btn-day {
-    min-height: 36px;
-    min-width: 36px;
-  }
-}
-
-/* Landscape tablet: force side-by-side even below md breakpoint */
-@media (orientation: landscape) and (min-width: 640px) and (max-width: 767px) {
-  .landscape-sidebar {
-    display: flex !important;
-    width: 260px;
-    flex-shrink: 0;
-  }
-
-  .landscape-hide-sheet {
-    display: none !important;
-  }
+  :root { --header-height: 36px; }
 }

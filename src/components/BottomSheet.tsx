@@ -1,28 +1,37 @@
 "use client";
 
 import { useRef, useState, useCallback, useEffect } from "react";
+import { DayFilter, DAYS, DAY_LABELS, getTodayKey } from "@/lib/types";
 
 type SnapPoint = "peek" | "half" | "full";
-
-const SNAP_HEIGHTS: Record<SnapPoint, number> = {
-  peek: 120,
-  half: 0, // calculated from vh
-  full: 0, // calculated from vh
-};
 
 interface BottomSheetProps {
   children: React.ReactNode;
   venueCount: number;
+  activeDay: DayFilter;
+  happeningNow: boolean;
+  onDayChange: (day: DayFilter) => void;
+  onHappeningNowToggle: () => void;
+  selectedVenueId: number | null;
 }
 
-export default function BottomSheet({ children, venueCount }: BottomSheetProps) {
-  const sheetRef = useRef<HTMLDivElement>(null);
+export default function BottomSheet({
+  children,
+  venueCount,
+  activeDay,
+  happeningNow,
+  onDayChange,
+  onHappeningNowToggle,
+  selectedVenueId,
+}: BottomSheetProps) {
   const contentRef = useRef<HTMLDivElement>(null);
   const [snap, setSnap] = useState<SnapPoint>("peek");
   const [dragging, setDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState(0);
 
-  // Track touch state in refs to avoid stale closures
+  const todayKey = getTodayKey();
+  const isWeekday = todayKey !== null;
+
   const touchState = useRef({
     startY: 0,
     startHeight: 0,
@@ -33,26 +42,30 @@ export default function BottomSheet({ children, venueCount }: BottomSheetProps) 
 
   const getSnapHeight = useCallback((point: SnapPoint) => {
     const vh = window.innerHeight;
-    if (point === "peek") return SNAP_HEIGHTS.peek;
+    if (point === "peek") return 100;
     if (point === "half") return vh * 0.5;
     return vh * 0.85;
   }, []);
 
-  const currentHeight = dragging
-    ? dragOffset
-    : getSnapHeight(snap);
+  const currentHeight = dragging ? dragOffset : getSnapHeight(snap);
+
+  // Auto-expand when a venue is selected on the map
+  useEffect(() => {
+    if (selectedVenueId != null && snap === "peek") {
+      setSnap("half");
+    }
+  }, [selectedVenueId, snap]);
 
   const handleTouchStart = useCallback(
     (e: React.TouchEvent) => {
-      // Only drag from the handle area, not the scrollable content
       const target = e.target as HTMLElement;
       const isHandle = target.closest("[data-sheet-handle]");
-      const isContentScrolled = contentRef.current && contentRef.current.scrollTop > 0;
 
-      // If touching content area and it's scrolled, let native scroll handle it
-      if (!isHandle && isContentScrolled && snap === "full") return;
-      // If touching content and sheet is not full, allow drag
-      if (!isHandle && snap === "full") return;
+      // In full mode, only drag from handle (let content scroll naturally)
+      if (snap === "full" && !isHandle) {
+        const scrollTop = contentRef.current?.scrollTop ?? 0;
+        if (scrollTop > 0) return; // content is scrolled, let it scroll
+      }
 
       const touch = e.touches[0];
       touchState.current = {
@@ -70,20 +83,15 @@ export default function BottomSheet({ children, venueCount }: BottomSheetProps) 
   const handleTouchMove = useCallback(
     (e: React.TouchEvent) => {
       if (!dragging) return;
-
       const touch = e.touches[0];
       const now = Date.now();
       const dt = now - touchState.current.lastTime;
       const dy = touchState.current.lastY - touch.clientY;
-
-      if (dt > 0) {
-        touchState.current.velocity = dy / dt; // px/ms, positive = dragging up
-      }
+      if (dt > 0) touchState.current.velocity = dy / dt;
       touchState.current.lastY = touch.clientY;
       touchState.current.lastTime = now;
-
       const delta = touchState.current.startY - touch.clientY;
-      const newHeight = Math.max(80, Math.min(window.innerHeight * 0.9, touchState.current.startHeight + delta));
+      const newHeight = Math.max(60, Math.min(window.innerHeight * 0.92, touchState.current.startHeight + delta));
       setDragOffset(newHeight);
     },
     [dragging]
@@ -92,45 +100,28 @@ export default function BottomSheet({ children, venueCount }: BottomSheetProps) 
   const handleTouchEnd = useCallback(() => {
     if (!dragging) return;
     setDragging(false);
-
     const v = touchState.current.velocity;
     const h = dragOffset;
     const vh = window.innerHeight;
 
-    // Velocity-based snapping
     if (Math.abs(v) > 0.5) {
-      // Fast swipe
-      if (v > 0) {
-        // Swiping up
-        setSnap(h > vh * 0.4 ? "full" : "half");
-      } else {
-        // Swiping down
-        setSnap(h < vh * 0.3 ? "peek" : "half");
-      }
+      if (v > 0) setSnap(h > vh * 0.4 ? "full" : "half");
+      else setSnap(h < vh * 0.3 ? "peek" : "half");
     } else {
-      // Position-based snapping
       const peekH = getSnapHeight("peek");
       const halfH = getSnapHeight("half");
       const fullH = getSnapHeight("full");
-
       const dPeek = Math.abs(h - peekH);
       const dHalf = Math.abs(h - halfH);
       const dFull = Math.abs(h - fullH);
-
       if (dPeek <= dHalf && dPeek <= dFull) setSnap("peek");
       else if (dHalf <= dFull) setSnap("half");
       else setSnap("full");
     }
   }, [dragging, dragOffset, getSnapHeight]);
 
-  // When a venue is selected, expand to half if peeking
-  useEffect(() => {
-    // This is handled by the parent passing props; we just need the sheet open
-  }, []);
-
   return (
     <div
-      ref={sheetRef}
       className="fixed bottom-0 left-0 right-0 z-40 md:hidden"
       style={{
         height: `${currentHeight}px`,
@@ -141,26 +132,50 @@ export default function BottomSheet({ children, venueCount }: BottomSheetProps) 
       onTouchEnd={handleTouchEnd}
     >
       <div className="h-full bg-gray-50 rounded-t-2xl shadow-[0_-4px_20px_rgba(0,0,0,0.15)] flex flex-col overflow-hidden">
-        {/* Drag handle */}
-        <div
-          data-sheet-handle
-          className="shrink-0 pt-2 pb-1 px-4 cursor-grab active:cursor-grabbing"
-        >
-          <div className="w-10 h-1 bg-gray-300 rounded-full mx-auto mb-1" />
-          <div className="flex items-center justify-between">
-            <p className="text-xs text-gray-500 font-medium">
-              {venueCount} venue{venueCount !== 1 ? "s" : ""}
-            </p>
-            <button
-              onClick={() => setSnap(snap === "peek" ? "half" : "peek")}
-              className="text-xs text-brand-purple font-medium min-h-[32px] px-2"
-            >
-              {snap === "peek" ? "Show list" : "Collapse"}
-            </button>
+        {/* Handle + Day Filters */}
+        <div data-sheet-handle className="shrink-0 cursor-grab active:cursor-grabbing">
+          {/* Drag pill */}
+          <div className="pt-2 pb-1 flex justify-center">
+            <div className="w-10 h-1 bg-gray-300 rounded-full" />
+          </div>
+
+          {/* Day filter strip */}
+          <div className="px-2 pb-1.5 overflow-x-auto scrollbar-hide">
+            <div className="flex items-center gap-1 w-max">
+              {DAYS.map((day) => (
+                <button
+                  key={day}
+                  onClick={() => onDayChange(day)}
+                  className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-all whitespace-nowrap min-h-[32px] ${
+                    activeDay === day
+                      ? "bg-brand-purple text-white shadow-sm"
+                      : "bg-gray-200/80 text-gray-600 hover:bg-gray-300/80"
+                  }`}
+                >
+                  {DAY_LABELS[day].short}
+                </button>
+              ))}
+              {isWeekday && (
+                <button
+                  onClick={onHappeningNowToggle}
+                  className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-all whitespace-nowrap min-h-[32px] flex items-center gap-1 ${
+                    happeningNow
+                      ? "bg-brand-yellow text-brand-purple font-bold shadow-sm"
+                      : "bg-gray-200/80 text-gray-600 hover:bg-gray-300/80"
+                  }`}
+                >
+                  <span className={`w-1.5 h-1.5 rounded-full ${happeningNow ? "bg-brand-purple animate-pulse" : "bg-gray-400"}`} />
+                  Now
+                </button>
+              )}
+              <span className="text-[10px] text-gray-400 pl-1 whitespace-nowrap">
+                {venueCount} spot{venueCount !== 1 ? "s" : ""}
+              </span>
+            </div>
           </div>
         </div>
 
-        {/* Scrollable content */}
+        {/* Scrollable venue list */}
         <div
           ref={contentRef}
           className="flex-1 overflow-y-auto sidebar-scroll"
