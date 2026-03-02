@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo } from "react";
 import type { Venue, DayFilter } from "@/lib/types";
 import { getTodayKey } from "@/lib/types";
 import Header from "./Header";
-import Sidebar from "./Sidebar";
+import Sidebar, { VenueList } from "./Sidebar";
 import MapView from "./MapView";
 import Footer from "./Footer";
+import BottomSheet from "./BottomSheet";
 
 interface HappyHourAppProps {
   initialVenues: Venue[];
@@ -124,8 +125,8 @@ export default function HappyHourApp({ initialVenues }: HappyHourAppProps) {
         className="flex flex-1 overflow-hidden"
         style={{ marginTop: "calc(var(--header-height) + 3px)" }}
       >
-        {/* Mobile: stacked (sidebar top, map bottom); Desktop: side by side */}
-        <div className="flex flex-col md:flex-row w-full h-full">
+        {/* Desktop: sidebar + map side by side */}
+        <div className="flex flex-row w-full h-full">
           <Sidebar
             venues={filteredVenues}
             selectedVenue={selectedVenue}
@@ -145,7 +146,21 @@ export default function HappyHourApp({ initialVenues }: HappyHourAppProps) {
         </div>
       </div>
 
-      <Footer />
+      {/* Mobile: bottom sheet over full-screen map */}
+      <BottomSheet venueCount={filteredVenues.length}>
+        <VenueList
+          venues={filteredVenues}
+          selectedVenue={selectedVenue}
+          selectedNeighborhood={selectedNeighborhood}
+          onVenueSelect={handleVenueSelect}
+          onNeighborhoodSelect={handleNeighborhoodSelect}
+        />
+      </BottomSheet>
+
+      {/* Footer — hidden on mobile (bottom sheet covers it) */}
+      <div className="hidden md:block">
+        <Footer />
+      </div>
     </div>
   );
 }

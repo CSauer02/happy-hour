@@ -90,3 +90,28 @@
 .sidebar-scroll::-webkit-scrollbar-thumb:hover {
   background: rgba(117, 7, 135, 0.4);
 }
+
+/* Landscape phone: compact header, hide bottom sheet peek text */
+@media (orientation: landscape) and (max-height: 500px) {
+  :root {
+    --header-height: 40px;
+  }
+
+  .btn-day {
+    min-height: 36px;
+    min-width: 36px;
+  }
+}
+
+/* Landscape tablet: force side-by-side even below md breakpoint */
+@media (orientation: landscape) and (min-width: 640px) and (max-width: 767px) {
+  .landscape-sidebar {
+    display: flex !important;
+    width: 260px;
+    flex-shrink: 0;
+  }
+
+  .landscape-hide-sheet {
+    display: none !important;
+  }
+}
