@@ -41,7 +41,7 @@ export default function BottomSheet({
   });
 
   const getSnapHeight = useCallback((point: SnapPoint) => {
-    const vh = window.innerHeight;
+    const vh = typeof window !== "undefined" ? window.innerHeight : 800;
     if (point === "peek") return 100;
     if (point === "half") return vh * 0.5;
     return vh * 0.85;
@@ -91,7 +91,8 @@ export default function BottomSheet({
       touchState.current.lastY = touch.clientY;
       touchState.current.lastTime = now;
       const delta = touchState.current.startY - touch.clientY;
-      const newHeight = Math.max(60, Math.min(window.innerHeight * 0.92, touchState.current.startHeight + delta));
+      const maxH = typeof window !== "undefined" ? window.innerHeight * 0.92 : 700;
+      const newHeight = Math.max(60, Math.min(maxH, touchState.current.startHeight + delta));
       setDragOffset(newHeight);
     },
     [dragging]
@@ -102,7 +103,7 @@ export default function BottomSheet({
     setDragging(false);
     const v = touchState.current.velocity;
     const h = dragOffset;
-    const vh = window.innerHeight;
+    const vh = typeof window !== "undefined" ? window.innerHeight : 800;
 
     if (Math.abs(v) > 0.5) {
       if (v > 0) setSnap(h > vh * 0.4 ? "full" : "half");
