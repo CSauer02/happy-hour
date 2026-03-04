@@ -58,6 +58,7 @@
 }
 
 /* Sidebar scrollbar */
+.sidebar-scroll { scroll-padding-top: 40px; }
 .sidebar-scroll::-webkit-scrollbar { width: 4px; }
 .sidebar-scroll::-webkit-scrollbar-track { background: transparent; }
 .sidebar-scroll::-webkit-scrollbar-thumb { background: rgba(117, 7, 135, 0.15); border-radius: 2px; }
