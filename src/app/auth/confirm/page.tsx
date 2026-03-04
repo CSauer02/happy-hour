@@ -27,7 +27,7 @@ export default function AuthConfirmPage() {
         .setSession({ access_token: accessToken, refresh_token: refreshToken ?? "" })
         .then(({ error }) => {
           if (error) {
-            setError("Invalid or expired link. Please request a new invite.");
+            setError("Invalid or expired link. Please request a new one.");
           } else {
             setReady(true);
           }
@@ -73,7 +73,7 @@ export default function AuthConfirmPage() {
           {error ? (
             <p className="text-red-600 text-sm">{error}</p>
           ) : (
-            <p className="text-purple-700">Verifying your invite link…</p>
+            <p className="text-purple-700">Verifying your link…</p>
           )}
         </div>
       </div>

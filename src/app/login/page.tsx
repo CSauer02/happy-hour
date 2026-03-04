@@ -25,7 +25,7 @@ export default function LoginPage() {
     try {
       const supabase = createClient();
       const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: "https://atlhour.com/login",
+        redirectTo: "https://atlhour.com/auth/confirm",
       });
       if (resetError) {
         setError(resetError.message || "Failed to send reset email");
