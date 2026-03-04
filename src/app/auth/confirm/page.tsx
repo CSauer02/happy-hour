@@ -84,13 +84,16 @@ export default function AuthConfirmPage() {
 
     setSubmitting(true);
     try {
-      const supabase = createClient();
-      const { error: updateError } = await supabase.auth.updateUser({ password });
-      if (updateError) {
-        setError(updateError.message);
+      const res = await fetch("/api/auth/set-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password }),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        setError(data.error || "Failed to set password");
         setSubmitting(false);
       } else {
-        // Show success state immediately, then navigate
         setSuccess(true);
         window.location.href = "/";
       }
