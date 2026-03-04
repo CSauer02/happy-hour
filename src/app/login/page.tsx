@@ -128,16 +128,18 @@ export default function LoginPage() {
             </button>
           </form>
         ) : (
-          <form onSubmit={handleSubmit} className="space-y-3">
+          <form onSubmit={handleSubmit} className="space-y-3" autoComplete={isSignUp ? "off" : "on"} key={isSignUp ? "signup" : "signin"}>
             <div>
               <label
-                htmlFor="email"
+                htmlFor={isSignUp ? "new-email" : "login-email"}
                 className="block text-sm font-medium text-purple-700 mb-1"
               >
                 Email
               </label>
               <input
-                id="email"
+                key={isSignUp ? "new-email" : "login-email"}
+                id={isSignUp ? "new-email" : "login-email"}
+                name={isSignUp ? "email" : "username"}
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -150,13 +152,15 @@ export default function LoginPage() {
 
             <div>
               <label
-                htmlFor="password"
+                htmlFor={isSignUp ? "new-password" : "current-password"}
                 className="block text-sm font-medium text-purple-700 mb-1"
               >
                 Password
               </label>
               <input
-                id="password"
+                key={isSignUp ? "new-password" : "current-password"}
+                id={isSignUp ? "new-password" : "current-password"}
+                name={isSignUp ? "new-password" : "password"}
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
