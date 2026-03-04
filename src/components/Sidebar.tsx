@@ -39,17 +39,7 @@ export function VenueList({
     );
   }, [venues]);
 
-  // Expand neighborhood when venue or neighborhood is selected
-  useEffect(() => {
-    if (selectedVenue) {
-      setExpandedNeighborhoods((prev) => {
-        const next = new Set(prev);
-        next.add(selectedVenue.neighborhood);
-        return next;
-      });
-    }
-  }, [selectedVenue]);
-
+  // Expand neighborhood when neighborhood header is selected
   useEffect(() => {
     if (selectedNeighborhood) {
       setExpandedNeighborhoods((prev) => {
@@ -60,14 +50,28 @@ export function VenueList({
     }
   }, [selectedNeighborhood]);
 
-  // Scroll to selected venue
+  // Expand neighborhood AND scroll to card when venue is selected
+  // Delays scroll to wait for: (1) neighborhood DOM expansion, (2) BottomSheet height transition
   useEffect(() => {
-    if (selectedVenue && selectedRef.current) {
-      selectedRef.current.scrollIntoView({
-        behavior: "smooth",
-        block: "nearest",
-      });
-    }
+    if (!selectedVenue) return;
+
+    setExpandedNeighborhoods((prev) => {
+      const next = new Set(prev);
+      next.add(selectedVenue.neighborhood);
+      return next;
+    });
+
+    // 350ms covers the BottomSheet's 300ms CSS transition + DOM expansion
+    const timer = setTimeout(() => {
+      if (selectedRef.current) {
+        selectedRef.current.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+        });
+      }
+    }, 350);
+
+    return () => clearTimeout(timer);
   }, [selectedVenue]);
 
   const toggleNeighborhood = (neighborhood: string) => {
