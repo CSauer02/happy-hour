@@ -1,6 +1,6 @@
 {
   "name": "ATL Happy Hour",
-  "short_name": "ATL HH",
+  "short_name": "ATL Happy Hour",
   "description": "Best happy hour deals in Atlanta",
   "start_url": "/",
   "display": "standalone",
