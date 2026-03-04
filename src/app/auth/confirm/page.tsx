@@ -8,6 +8,7 @@ export default function AuthConfirmPage() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [success, setSuccess] = useState(false);
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
@@ -87,12 +88,14 @@ export default function AuthConfirmPage() {
       const { error: updateError } = await supabase.auth.updateUser({ password });
       if (updateError) {
         setError(updateError.message);
+        setSubmitting(false);
       } else {
-        window.location.href = "/deal-updater";
+        // Show success state immediately, then navigate
+        setSuccess(true);
+        window.location.href = "/";
       }
     } catch {
       setError("An unexpected error occurred");
-    } finally {
       setSubmitting(false);
     }
   };
@@ -107,6 +110,24 @@ export default function AuthConfirmPage() {
           ) : (
             <p className="text-purple-700">Verifying your link…</p>
           )}
+        </div>
+      </div>
+    );
+  }
+
+  if (success) {
+    return (
+      <div className="flex-1 bg-gradient-to-br from-pink-200 via-purple-200 to-blue-200 flex items-center justify-center p-4">
+        <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-8 w-full max-w-md text-center">
+          <div className="text-5xl mb-4">🦄</div>
+          <h1 className="text-2xl font-bold text-purple-800 mb-2">Password Set!</h1>
+          <p className="text-purple-600 text-sm mb-4">You&apos;re all signed in. Redirecting&hellip;</p>
+          <a
+            href="/"
+            className="text-purple-700 underline text-sm hover:text-purple-900"
+          >
+            Click here if not redirected
+          </a>
         </div>
       </div>
     );
