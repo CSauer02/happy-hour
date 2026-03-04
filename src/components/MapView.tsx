@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useCallback, useMemo } from "react";
+import { useEffect, useCallback, useMemo, memo } from "react";
 import {
   APIProvider,
   Map,
@@ -66,7 +66,7 @@ function MarkerPin({
   );
 }
 
-function MapContent({
+const MapContent = memo(function MapContent({
   venues,
   filteredVenues,
   selectedVenue,
@@ -177,14 +177,14 @@ function MapContent({
       )}
     </>
   );
-}
+});
 
 export default function MapView(props: MapViewProps) {
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
 
   const handleMapClick = useCallback(() => {
     props.onMapClick();
-  }, [props]);
+  }, [props.onMapClick]);
 
   if (!apiKey) {
     return (

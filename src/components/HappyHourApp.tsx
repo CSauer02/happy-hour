@@ -145,7 +145,7 @@ export default function HappyHourApp({ initialVenues }: HappyHourAppProps) {
           filteredVenues={filteredVenues}
           selectedVenue={selectedVenue}
           selectedNeighborhood={selectedNeighborhood}
-          onMarkerClick={(id) => handleVenueSelect(id)}
+          onMarkerClick={handleVenueSelect}
           onMapClick={handleMapClick}
         />
       </div>
