@@ -11,6 +11,7 @@ interface SidebarProps {
   onVenueSelect: (id: number | null) => void;
   onNeighborhoodSelect: (neighborhood: string | null) => void;
   isLoading: boolean;
+  venueDistances?: Map<number, number>;
 }
 
 // Extracted venue list content — reused in both Sidebar and BottomSheet
@@ -20,6 +21,7 @@ export function VenueList({
   selectedNeighborhood,
   onVenueSelect,
   onNeighborhoodSelect,
+  venueDistances,
 }: Omit<SidebarProps, "isLoading">) {
   const [expandedNeighborhoods, setExpandedNeighborhoods] = useState<
     Set<string>
@@ -144,6 +146,7 @@ export function VenueList({
                       venue={venue}
                       isSelected={selectedVenue?.id === venue.id}
                       onSelect={onVenueSelect}
+                      distance={venueDistances?.get(venue.id)}
                     />
                   </div>
                 ))}
@@ -164,6 +167,7 @@ export default function Sidebar({
   onVenueSelect,
   onNeighborhoodSelect,
   isLoading,
+  venueDistances,
 }: SidebarProps) {
   if (isLoading) {
     return (
@@ -198,6 +202,7 @@ export default function Sidebar({
           selectedNeighborhood={selectedNeighborhood}
           onVenueSelect={onVenueSelect}
           onNeighborhoodSelect={onNeighborhoodSelect}
+          venueDistances={venueDistances}
         />
       </div>
     </aside>

@@ -9,6 +9,7 @@ import {
 } from "@vis.gl/react-google-maps";
 import type { Venue } from "@/lib/types";
 import { getTodayKey } from "@/lib/types";
+import type { GpsState } from "./HappyHourApp";
 
 const MARKER_COLORS = [
   "#e40303", // red
@@ -33,6 +34,11 @@ interface MapViewProps {
   selectedNeighborhood: string | null;
   onMarkerClick: (id: number) => void;
   onMapClick: () => void;
+  userLocation: { lat: number; lng: number } | null;
+  gpsState: GpsState;
+  onGpsStateChange: (state: GpsState) => void;
+  onUserLocationChange: (loc: { lat: number; lng: number }) => void;
+  venueDistances: Map<number, number>;
 }
 
 function getFaviconUrl(restaurantUrl: string | null): string | null {
@@ -249,6 +255,139 @@ function FaviconPin({
   );
 }
 
+/* ME Beacon — user's location marker */
+function MeBeacon() {
+  return (
+    <div style={{ position: "relative", width: 46, height: 60, pointerEvents: "none" }}>
+      {/* Radar rings */}
+      <div className="me-radar-ring me-radar-ring-1" />
+      <div className="me-radar-ring me-radar-ring-2" />
+
+      {/* Main circle */}
+      <div
+        className="me-beacon-pulse"
+        style={{
+          width: 46,
+          height: 46,
+          borderRadius: "50%",
+          background: "linear-gradient(135deg, #750787, #ff8c00)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          boxShadow: "0 2px 10px rgba(117,7,135,0.4)",
+          position: "relative",
+          zIndex: 2,
+        }}
+      >
+        <span style={{ fontSize: 22, lineHeight: 1 }}>🙋</span>
+      </div>
+
+      {/* ME pill label */}
+      <div
+        style={{
+          position: "absolute",
+          bottom: 0,
+          left: "50%",
+          transform: "translateX(-50%)",
+          background: "linear-gradient(135deg, #750787, #ff8c00)",
+          color: "white",
+          fontSize: 9,
+          fontWeight: 800,
+          padding: "1px 6px",
+          borderRadius: 6,
+          letterSpacing: 1,
+          zIndex: 2,
+        }}
+      >
+        ME
+      </div>
+    </div>
+  );
+}
+
+/* GPS Locate Button */
+function GpsButton({
+  gpsState,
+  onLocate,
+}: {
+  gpsState: GpsState;
+  onLocate: () => void;
+}) {
+  const isAcquiring = gpsState === "acquiring";
+
+  return (
+    <button
+      onClick={onLocate}
+      disabled={gpsState === "denied"}
+      className="group"
+      style={{
+        position: "absolute",
+        bottom: 110,
+        right: 10,
+        zIndex: 5,
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        gap: 2,
+        background: "none",
+        border: "none",
+        cursor: gpsState === "denied" ? "not-allowed" : "pointer",
+        opacity: gpsState === "denied" ? 0.4 : 1,
+      }}
+      title="Locate me"
+    >
+      <div
+        style={{
+          width: 56,
+          height: 56,
+          borderRadius: "50%",
+          background: isAcquiring
+            ? "linear-gradient(135deg, #750787, #ff8c00)"
+            : "white",
+          border: isAcquiring ? "none" : "2.5px solid #750787",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          boxShadow: "0 2px 10px rgba(0,0,0,0.2)",
+          transition: "background 0.3s, border 0.3s",
+        }}
+      >
+        <svg
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke={isAcquiring ? "white" : "#750787"}
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          className={isAcquiring ? "animate-spin" : ""}
+        >
+          {/* Crosshair icon */}
+          <circle cx="12" cy="12" r="4" />
+          <line x1="12" y1="2" x2="12" y2="6" />
+          <line x1="12" y1="18" x2="12" y2="22" />
+          <line x1="2" y1="12" x2="6" y2="12" />
+          <line x1="18" y1="12" x2="22" y2="12" />
+        </svg>
+      </div>
+      <span
+        style={{
+          fontSize: 10,
+          fontWeight: 600,
+          color: "#750787",
+          background: "white",
+          padding: "1px 6px",
+          borderRadius: 8,
+          boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+        }}
+      >
+        {isAcquiring ? "finding..." : "locate me"}
+      </span>
+    </button>
+  );
+}
+
 const MapContent = memo(function MapContent({
   venues,
   filteredVenues,
@@ -256,6 +395,11 @@ const MapContent = memo(function MapContent({
   selectedNeighborhood,
   onMarkerClick,
   onMapClick,
+  userLocation,
+  gpsState,
+  onGpsStateChange,
+  onUserLocationChange,
+  venueDistances,
 }: MapViewProps) {
   const map = useMap();
 
@@ -293,6 +437,31 @@ const MapContent = memo(function MapContent({
     map.panTo({ lat: selectedVenue.latitude, lng: selectedVenue.longitude });
   }, [map, selectedVenue]);
 
+  // Animate to user location when GPS acquires
+  useEffect(() => {
+    if (!map || !userLocation || gpsState !== "located") return;
+    map.panTo(userLocation);
+    map.setZoom(14);
+    // Only run on initial location acquisition
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [map, gpsState === "located"]);
+
+  const handleLocate = useCallback(() => {
+    if (!navigator.geolocation) return;
+    onGpsStateChange("acquiring");
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const loc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+        onUserLocationChange(loc);
+        onGpsStateChange("located");
+      },
+      () => {
+        onGpsStateChange("denied");
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+    );
+  }, [onGpsStateChange, onUserLocationChange]);
+
   const mappableVenues = venues.filter(
     (v) => v.latitude != null && v.longitude != null
   );
@@ -321,18 +490,36 @@ const MapContent = memo(function MapContent({
 
         const color = MARKER_COLORS[venue.id % MARKER_COLORS.length];
 
+        // Closer venues get higher z-index when distance sorting active
+        const dist = venueDistances.get(venue.id);
+        const distanceZIndex = dist != null ? Math.max(1, Math.round(100 - dist)) : 1;
+        const zIndex = isSelected ? 1000 : distanceZIndex;
+
         return (
           <AdvancedMarker
             key={venue.id}
             position={{ lat: venue.latitude!, lng: venue.longitude! }}
             onClick={() => onMarkerClick(venue.id)}
-            zIndex={isSelected ? 1000 : 1}
+            zIndex={zIndex}
             style={{ opacity, transition: "opacity 0.3s" }}
           >
             <FaviconPin venue={venue} color={color} isSelected={isSelected} />
           </AdvancedMarker>
         );
       })}
+
+      {/* ME Beacon */}
+      {userLocation && (
+        <AdvancedMarker
+          position={userLocation}
+          zIndex={999}
+        >
+          <MeBeacon />
+        </AdvancedMarker>
+      )}
+
+      {/* GPS Button */}
+      <GpsButton gpsState={gpsState} onLocate={handleLocate} />
     </>
   );
 });

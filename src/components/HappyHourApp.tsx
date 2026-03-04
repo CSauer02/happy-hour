@@ -4,9 +4,12 @@ import { useState, useCallback, useMemo, useEffect } from "react";
 import { createPortal } from "react-dom";
 import type { Venue, DayFilter } from "@/lib/types";
 import { getTodayKey, DAYS, DAY_LABELS } from "@/lib/types";
+import { haversineDistance } from "@/lib/geo";
 import Sidebar, { VenueList } from "./Sidebar";
 import MapView from "./MapView";
 import BottomSheet from "./BottomSheet";
+
+export type GpsState = "idle" | "acquiring" | "located" | "denied";
 
 interface HappyHourAppProps {
   initialVenues: Venue[];
@@ -18,6 +21,8 @@ export default function HappyHourApp({ initialVenues }: HappyHourAppProps) {
   const [selectedVenue, setSelectedVenue] = useState<Venue | null>(null);
   const [selectedNeighborhood, setSelectedNeighborhood] = useState<string | null>(null);
   const [headerSlot, setHeaderSlot] = useState<HTMLElement | null>(null);
+  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [gpsState, setGpsState] = useState<GpsState>("idle");
 
   const todayKey = getTodayKey();
   const isWeekday = todayKey !== null;
@@ -26,6 +31,33 @@ export default function HappyHourApp({ initialVenues }: HappyHourAppProps) {
   useEffect(() => {
     setHeaderSlot(document.getElementById("header-nav-slot"));
   }, []);
+
+  // Silent geolocation on mount
+  useEffect(() => {
+    if (!navigator.geolocation) return;
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setUserLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+        setGpsState("located");
+      },
+      () => {
+        // Silent fail — user didn't grant permission yet, that's fine
+      },
+      { enableHighAccuracy: false, timeout: 8000, maximumAge: 300000 }
+    );
+  }, []);
+
+  // Compute distances from user location
+  const venueDistances = useMemo(() => {
+    if (!userLocation) return new Map<number, number>();
+    const map = new Map<number, number>();
+    for (const v of initialVenues) {
+      if (v.latitude != null && v.longitude != null) {
+        map.set(v.id, haversineDistance(userLocation.lat, userLocation.lng, v.latitude, v.longitude));
+      }
+    }
+    return map;
+  }, [initialVenues, userLocation]);
 
   const filteredVenues = useMemo(() => {
     let filtered = initialVenues;
@@ -42,8 +74,16 @@ export default function HappyHourApp({ initialVenues }: HappyHourAppProps) {
         );
       }
     }
+    // Sort by distance when user location is available
+    if (userLocation) {
+      filtered = [...filtered].sort((a, b) => {
+        const da = venueDistances.get(a.id) ?? Infinity;
+        const db = venueDistances.get(b.id) ?? Infinity;
+        return da - db;
+      });
+    }
     return filtered;
-  }, [initialVenues, activeDay, happeningNow]);
+  }, [initialVenues, activeDay, happeningNow, userLocation, venueDistances]);
 
   const handleDayChange = useCallback(
     (day: DayFilter) => {
@@ -139,6 +179,11 @@ export default function HappyHourApp({ initialVenues }: HappyHourAppProps) {
           selectedNeighborhood={selectedNeighborhood}
           onMarkerClick={handleVenueSelect}
           onMapClick={handleMapClick}
+          userLocation={userLocation}
+          gpsState={gpsState}
+          onGpsStateChange={setGpsState}
+          onUserLocationChange={setUserLocation}
+          venueDistances={venueDistances}
         />
         <Sidebar
           venues={filteredVenues}
@@ -147,6 +192,7 @@ export default function HappyHourApp({ initialVenues }: HappyHourAppProps) {
           onVenueSelect={handleVenueSelect}
           onNeighborhoodSelect={handleNeighborhoodSelect}
           isLoading={false}
+          venueDistances={venueDistances}
         />
       </div>
 
@@ -158,6 +204,7 @@ export default function HappyHourApp({ initialVenues }: HappyHourAppProps) {
         onDayChange={handleDayChange}
         onHappeningNowToggle={handleHappeningNowToggle}
         selectedVenueId={selectedVenue?.id ?? null}
+        isLocated={gpsState === "located"}
       >
         <VenueList
           venues={filteredVenues}
@@ -165,6 +212,7 @@ export default function HappyHourApp({ initialVenues }: HappyHourAppProps) {
           selectedNeighborhood={selectedNeighborhood}
           onVenueSelect={handleVenueSelect}
           onNeighborhoodSelect={handleNeighborhoodSelect}
+          venueDistances={venueDistances}
         />
       </BottomSheet>
     </div>

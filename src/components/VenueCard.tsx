@@ -7,12 +7,14 @@ interface VenueCardProps {
   venue: Venue;
   isSelected: boolean;
   onSelect: (id: number) => void;
+  distance?: number;
 }
 
 export default function VenueCard({
   venue,
   isSelected,
   onSelect,
+  distance,
 }: VenueCardProps) {
   const [faviconError, setFaviconError] = useState(false);
 
@@ -50,6 +52,11 @@ export default function VenueCard({
           <p className="text-xs text-gray-600 mt-0.5 line-clamp-2">
             {venue.deal}
           </p>
+          {distance != null && (
+            <p className="text-[10px] text-gray-400 mt-0.5">
+              {distance < 0.1 ? "nearby" : `${distance.toFixed(1)} mi away`}
+            </p>
+          )}
         </div>
 
         <div className="flex flex-col items-center gap-1 shrink-0">
