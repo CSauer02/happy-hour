@@ -15,21 +15,31 @@ export default function AuthConfirmPage() {
   useEffect(() => {
     const supabase = createClient();
 
-    // First try: check if we already have a session (PKCE flow — code was
-    // exchanged by /auth/callback before redirecting here)
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
-        setReady(true);
-        return;
+    // Listen for auth events — PASSWORD_RECOVERY fires when a recovery
+    // session is established (either via code exchange or hash tokens)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event) => {
+        if (event === "PASSWORD_RECOVERY" || event === "SIGNED_IN") {
+          setReady(true);
+        }
       }
+    );
 
-      // Fallback: legacy implicit flow with hash fragments
-      const hash = window.location.hash;
-      if (!hash) {
-        setError("Invalid or expired link. Please request a new one.");
-        return;
-      }
+    // Try exchanging a PKCE code from the URL query params
+    const code = new URLSearchParams(window.location.search).get("code");
+    if (code) {
+      supabase.auth.exchangeCodeForSession(code).then(({ error: codeError }) => {
+        if (codeError) {
+          setError("Invalid or expired link. Please request a new one.");
+        }
+        // onAuthStateChange will fire and set ready
+      });
+      return () => subscription.unsubscribe();
+    }
 
+    // Try hash fragments (legacy implicit flow / invite links)
+    const hash = window.location.hash;
+    if (hash) {
       const params = new URLSearchParams(hash.slice(1));
       const type = params.get("type");
       const accessToken = params.get("access_token");
@@ -41,14 +51,23 @@ export default function AuthConfirmPage() {
           .then(({ error: sessionError }) => {
             if (sessionError) {
               setError("Invalid or expired link. Please request a new one.");
-            } else {
-              setReady(true);
             }
+            // onAuthStateChange will fire and set ready
           });
+        return () => subscription.unsubscribe();
+      }
+    }
+
+    // Check for existing session (redirected from /auth/callback)
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) {
+        setReady(true);
       } else {
         setError("Invalid or expired link. Please request a new one.");
       }
     });
+
+    return () => subscription.unsubscribe();
   }, []);
 
   const handleSetPassword = async (e: React.FormEvent) => {
@@ -120,6 +139,7 @@ export default function AuthConfirmPage() {
               onChange={(e) => setPassword(e.target.value)}
               required
               minLength={8}
+              autoComplete="new-password"
               className="w-full px-4 py-2.5 rounded-xl border border-purple-200 focus:outline-none focus:ring-2 focus:ring-purple-400 bg-white/70"
               placeholder="Min 8 characters"
             />
@@ -138,6 +158,7 @@ export default function AuthConfirmPage() {
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               required
+              autoComplete="new-password"
               className="w-full px-4 py-2.5 rounded-xl border border-purple-200 focus:outline-none focus:ring-2 focus:ring-purple-400 bg-white/70"
               placeholder="Repeat password"
             />
