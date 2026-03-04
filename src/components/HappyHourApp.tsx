@@ -90,7 +90,7 @@ export default function HappyHourApp({ initialVenues }: HappyHourAppProps) {
   }, []);
 
   return (
-    <div className="flex flex-col flex-1">
+    <div className="flex flex-col flex-1 overflow-hidden">
       {/* Desktop day filter bar — below the site header */}
       <nav className="hidden md:flex bg-brand-gradient/80 px-3 py-1 items-center gap-1 overflow-x-auto scrollbar-hide shrink-0">
         <div className="max-w-screen-2xl mx-auto flex items-center gap-1 w-full">
@@ -117,26 +117,24 @@ export default function HappyHourApp({ initialVenues }: HappyHourAppProps) {
         </div>
       </nav>
 
-      {/* Map + Sidebar */}
-      <div className="flex flex-1 overflow-hidden">
-        <div className="flex flex-row w-full h-full">
-          <Sidebar
-            venues={filteredVenues}
-            selectedVenue={selectedVenue}
-            selectedNeighborhood={selectedNeighborhood}
-            onVenueSelect={handleVenueSelect}
-            onNeighborhoodSelect={handleNeighborhoodSelect}
-            isLoading={false}
-          />
-          <MapView
-            venues={initialVenues}
-            filteredVenues={filteredVenues}
-            selectedVenue={selectedVenue}
-            selectedNeighborhood={selectedNeighborhood}
-            onMarkerClick={(id) => handleVenueSelect(id)}
-            onMapClick={handleMapClick}
-          />
-        </div>
+      {/* Map + Sidebar — min-h-0 allows flex-1 to constrain height */}
+      <div className="flex flex-1 min-h-0">
+        <Sidebar
+          venues={filteredVenues}
+          selectedVenue={selectedVenue}
+          selectedNeighborhood={selectedNeighborhood}
+          onVenueSelect={handleVenueSelect}
+          onNeighborhoodSelect={handleNeighborhoodSelect}
+          isLoading={false}
+        />
+        <MapView
+          venues={initialVenues}
+          filteredVenues={filteredVenues}
+          selectedVenue={selectedVenue}
+          selectedNeighborhood={selectedNeighborhood}
+          onMarkerClick={(id) => handleVenueSelect(id)}
+          onMapClick={handleMapClick}
+        />
       </div>
 
       {/* Mobile bottom sheet with day filters */}

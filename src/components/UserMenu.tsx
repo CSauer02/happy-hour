@@ -1,12 +1,10 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { createClient, signOut } from "@/lib/supabase-browser";
+import { createClient } from "@/lib/supabase-browser";
 
 export default function UserMenu() {
-  const router = useRouter();
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [open, setOpen] = useState(false);
@@ -47,11 +45,12 @@ export default function UserMenu() {
     return () => document.removeEventListener("mousedown", handler);
   }, [open]);
 
-  const handleSignOut = async () => {
+  const handleSignOut = () => {
     setOpen(false);
-    await signOut();
-    router.push("/");
-    router.refresh();
+    // Full-page redirect to server sign-out route — bulletproof.
+    // Clears all cookies server-side, then redirects to /.
+    // Full page load ensures no stale client state or router cache.
+    window.location.href = "/api/auth/signout";
   };
 
   if (!userEmail) {

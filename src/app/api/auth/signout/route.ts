@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 
-export async function POST(request: NextRequest) {
-  const response = NextResponse.json({ ok: true });
+async function handleSignOut(request: NextRequest) {
+  const redirectUrl = new URL("/", request.url);
+  const response = NextResponse.redirect(redirectUrl);
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -23,7 +24,7 @@ export async function POST(request: NextRequest) {
 
   await supabase.auth.signOut();
 
-  // Belt-and-suspenders: explicitly delete all Supabase auth cookies
+  // Belt-and-suspenders: explicitly delete every Supabase cookie
   for (const cookie of request.cookies.getAll()) {
     if (cookie.name.startsWith("sb-")) {
       response.cookies.set(cookie.name, "", { maxAge: 0, path: "/" });
@@ -31,4 +32,14 @@ export async function POST(request: NextRequest) {
   }
 
   return response;
+}
+
+// GET: full-page sign-out redirect (bulletproof — clears all state)
+export async function GET(request: NextRequest) {
+  return handleSignOut(request);
+}
+
+// POST: API-style sign-out (kept for backwards compatibility)
+export async function POST(request: NextRequest) {
+  return handleSignOut(request);
 }
