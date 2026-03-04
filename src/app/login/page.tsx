@@ -29,7 +29,8 @@ export default function LoginPage() {
       if (resetError) {
         setError(resetError.message || "Failed to send reset email");
       } else {
-        setSuccess("Check your email for a password reset link!");
+        setIsForgotPassword(false);
+        setSuccess("Reset link sent! Check your email, then sign in with your new password.");
       }
     } catch {
       setError("An unexpected error occurred");
