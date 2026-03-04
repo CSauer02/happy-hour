@@ -116,7 +116,7 @@ export function VenueList({
               }`}
             >
               <div className="flex items-center gap-2">
-                <span className="font-semibold text-gray-800 text-sm">
+                <span className="font-semibold text-gray-800 text-base">
                   {neighborhood}
                 </span>
                 <span className="text-[10px] text-gray-400 bg-gray-200 rounded-full px-1.5 py-0.5">
@@ -178,7 +178,7 @@ export default function Sidebar({
 }: SidebarProps) {
   if (isLoading) {
     return (
-      <aside className="hidden md:flex absolute top-0 left-0 bottom-0 z-10 w-72 lg:w-80 bg-gray-50/85 backdrop-blur-md border-r border-gray-200/50 overflow-hidden flex-col shadow-lg">
+      <aside className="hidden md:flex absolute top-0 bottom-0 z-10 w-72 lg:w-80 bg-gray-50/85 backdrop-blur-md border-r border-gray-200/50 overflow-hidden flex-col shadow-lg left-[env(safe-area-inset-left,0px)]">
         <div className="p-2 space-y-2">
           {[...Array(5)].map((_, i) => (
             <div key={i} className="animate-pulse">

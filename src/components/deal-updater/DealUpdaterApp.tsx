@@ -242,8 +242,8 @@ export default function DealUpdaterApp({ initialVenueId }: DealUpdaterAppProps) 
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           images,
-          textInput: extractedData?.deal_description || "",
-          restaurantName: extractedData?.restaurant_name || "",
+          textInput: "",
+          restaurantName: "",
           venues: existingEntries,
           location,
         }),

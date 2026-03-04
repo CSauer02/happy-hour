@@ -42,7 +42,7 @@
   }
 
   .neighborhood-header {
-    @apply sticky top-0 z-10 bg-gray-50/80 backdrop-blur-sm px-3 py-1.5
+    @apply sticky top-0 z-10 bg-gray-50/80 backdrop-blur-sm px-3 py-2.5
            flex items-center justify-between cursor-pointer
            hover:bg-gray-100/80 transition-colors duration-150;
   }

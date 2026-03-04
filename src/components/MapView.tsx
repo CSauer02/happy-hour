@@ -321,7 +321,9 @@ function GpsButton({
       className="group"
       style={{
         position: "absolute",
-        bottom: 110,
+        bottom: typeof window !== "undefined" && window.innerWidth < 768
+          ? "calc(50dvh + 10px)"
+          : 20,
         right: "calc(10px + env(safe-area-inset-right, 0px))",
         zIndex: 5,
         display: "flex",
@@ -337,13 +339,13 @@ function GpsButton({
     >
       <div
         style={{
-          width: 56,
-          height: 56,
+          width: 40,
+          height: 40,
           borderRadius: "50%",
           background: isAcquiring
             ? "linear-gradient(135deg, #750787, #ff8c00)"
             : "white",
-          border: isAcquiring ? "none" : "2.5px solid #750787",
+          border: isAcquiring ? "none" : "2px solid #750787",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
@@ -352,8 +354,8 @@ function GpsButton({
         }}
       >
         <svg
-          width="24"
-          height="24"
+          width="18"
+          height="18"
           viewBox="0 0 24 24"
           fill="none"
           stroke={isAcquiring ? "white" : "#750787"}
@@ -370,19 +372,21 @@ function GpsButton({
           <line x1="18" y1="12" x2="22" y2="12" />
         </svg>
       </div>
-      <span
-        style={{
-          fontSize: 10,
-          fontWeight: 600,
-          color: "#750787",
-          background: "white",
-          padding: "1px 6px",
-          borderRadius: 8,
-          boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
-        }}
-      >
-        {isAcquiring ? "finding..." : "locate me"}
-      </span>
+      {isAcquiring && (
+        <span
+          style={{
+            fontSize: 9,
+            fontWeight: 600,
+            color: "#750787",
+            background: "white",
+            padding: "1px 5px",
+            borderRadius: 8,
+            boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+          }}
+        >
+          finding...
+        </span>
+      )}
     </button>
   );
 }
@@ -419,7 +423,12 @@ const MapContent = memo(function MapContent({
     for (const v of neighborhoodVenues) {
       bounds.extend({ lat: v.latitude!, lng: v.longitude! });
     }
-    map.fitBounds(bounds, { top: 80, bottom: 20, left: 20, right: 20 });
+    // Padding accounts for sidebar (left on desktop) and bottom sheet (bottom on mobile)
+    const isMobile = window.innerWidth < 768;
+    const padding = isMobile
+      ? { top: 60, bottom: Math.round(window.innerHeight * 0.45), left: 20, right: 20 }
+      : { top: 60, bottom: 20, left: 340, right: 20 };
+    map.fitBounds(bounds, padding);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [map, selectedNeighborhood, venues]);
 
