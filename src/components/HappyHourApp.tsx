@@ -130,16 +130,8 @@ export default function HappyHourApp({ initialVenues }: HappyHourAppProps) {
         headerSlot
       )}
 
-      {/* Map + Sidebar */}
-      <div className="flex flex-1 min-h-0">
-        <Sidebar
-          venues={filteredVenues}
-          selectedVenue={selectedVenue}
-          selectedNeighborhood={selectedNeighborhood}
-          onVenueSelect={handleVenueSelect}
-          onNeighborhoodSelect={handleNeighborhoodSelect}
-          isLoading={false}
-        />
+      {/* Map (full-bleed) + Sidebar overlay */}
+      <div className="relative flex-1 min-h-0">
         <MapView
           venues={initialVenues}
           filteredVenues={filteredVenues}
@@ -147,6 +139,14 @@ export default function HappyHourApp({ initialVenues }: HappyHourAppProps) {
           selectedNeighborhood={selectedNeighborhood}
           onMarkerClick={handleVenueSelect}
           onMapClick={handleMapClick}
+        />
+        <Sidebar
+          venues={filteredVenues}
+          selectedVenue={selectedVenue}
+          selectedNeighborhood={selectedNeighborhood}
+          onVenueSelect={handleVenueSelect}
+          onNeighborhoodSelect={handleNeighborhoodSelect}
+          isLoading={false}
         />
       </div>
 

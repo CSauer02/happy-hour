@@ -167,7 +167,7 @@ export default function Sidebar({
 }: SidebarProps) {
   if (isLoading) {
     return (
-      <aside className="hidden md:flex w-72 lg:w-80 shrink-0 bg-gray-50 border-r border-gray-200 overflow-hidden flex-col">
+      <aside className="hidden md:flex absolute top-0 left-0 bottom-0 z-10 w-72 lg:w-80 bg-gray-50/85 backdrop-blur-md border-r border-gray-200/50 overflow-hidden flex-col shadow-lg">
         <div className="p-2 space-y-2">
           {[...Array(5)].map((_, i) => (
             <div key={i} className="animate-pulse">
@@ -184,8 +184,8 @@ export default function Sidebar({
   }
 
   return (
-    <aside className="hidden md:flex w-72 lg:w-80 shrink-0 bg-gray-50 border-r border-gray-200 flex-col overflow-hidden">
-      <div className="px-3 py-1 border-b border-gray-200 bg-white/80 backdrop-blur-sm">
+    <aside className="hidden md:flex absolute top-0 left-0 bottom-0 z-10 w-72 lg:w-80 bg-gray-50/85 backdrop-blur-md border-r border-gray-200/50 flex-col overflow-hidden shadow-lg">
+      <div className="px-3 py-1 border-b border-gray-200/50 bg-white/60 backdrop-blur-sm">
         <p className="text-xs text-gray-500 font-medium">
           {venues.length} venue{venues.length !== 1 ? "s" : ""}
         </p>
