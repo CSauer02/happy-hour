@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useCallback, useMemo, memo } from "react";
+import { useEffect, useCallback, useMemo, memo, useState } from "react";
 import {
   APIProvider,
   Map,
@@ -63,6 +63,85 @@ function MarkerPin({
       />
       <circle cx="12" cy="9" r="3" fill="white" opacity="0.8" />
     </svg>
+  );
+}
+
+function InfoWindowContent({ venue, onClose }: { venue: Venue; onClose: () => void }) {
+  const [faviconError, setFaviconError] = useState(false);
+
+  let faviconUrl: string | null = null;
+  if (venue.restaurant_url) {
+    try {
+      const hostname = new URL(venue.restaurant_url).hostname;
+      faviconUrl = `https://www.google.com/s2/favicons?domain=${encodeURIComponent(hostname)}&sz=32`;
+    } catch {
+      // invalid URL
+    }
+  }
+
+  const firstLetter = venue.restaurant_name?.charAt(0)?.toUpperCase() || "?";
+
+  return (
+    <InfoWindow
+      position={{ lat: venue.latitude!, lng: venue.longitude! }}
+      onCloseClick={onClose}
+      pixelOffset={[0, -35]}
+    >
+      <div className="info-window-rainbow min-w-[220px] max-w-[280px]">
+        <div className="rainbow-bar" />
+        <div className="px-3 py-2">
+          <div className="flex items-center gap-2">
+            <div className="w-6 h-6 bg-white rounded shadow-sm flex items-center justify-center shrink-0">
+              {faviconUrl && !faviconError ? (
+                /* eslint-disable-next-line @next/next/no-img-element */
+                <img
+                  src={faviconUrl}
+                  alt=""
+                  width={16}
+                  height={16}
+                  className="rounded-sm"
+                  loading="lazy"
+                  onError={() => setFaviconError(true)}
+                />
+              ) : (
+                <span className="text-[10px] font-bold text-brand-purple/70 leading-none">
+                  {firstLetter}
+                </span>
+              )}
+            </div>
+            <h3 className="font-bold text-brand-purple text-[14px] leading-tight">
+              {venue.restaurant_name}
+            </h3>
+          </div>
+          <p className="text-[13px] text-gray-600 mt-1 leading-snug line-clamp-2">
+            {venue.deal}
+          </p>
+          <div className="flex gap-3 mt-1.5">
+            {venue.restaurant_url && (
+              <a
+                href={venue.restaurant_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[13px] text-brand-purple font-medium hover:underline"
+              >
+                Site
+              </a>
+            )}
+            {venue.maps_url && (
+              <a
+                href={venue.maps_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[13px] text-brand-purple font-medium hover:underline"
+              >
+                Go
+              </a>
+            )}
+          </div>
+        </div>
+        <div className="rainbow-bar" />
+      </div>
+    </InfoWindow>
   );
 }
 
@@ -152,31 +231,7 @@ const MapContent = memo(function MapContent({
       })}
 
       {selectedVenue && selectedVenue.latitude && selectedVenue.longitude && (
-        <InfoWindow
-          position={{
-            lat: selectedVenue.latitude,
-            lng: selectedVenue.longitude,
-          }}
-          onCloseClick={onMapClick}
-          pixelOffset={[0, -35]}
-        >
-          <div className="px-1.5 py-1 max-w-[200px]">
-            <h3 className="font-bold text-brand-purple text-xs leading-tight">
-              {selectedVenue.restaurant_name}
-            </h3>
-            <p className="text-[10px] text-gray-600 mt-0.5 leading-snug line-clamp-2">{selectedVenue.deal}</p>
-            <div className="flex gap-2 mt-1">
-              {selectedVenue.restaurant_url && (
-                <a href={selectedVenue.restaurant_url} target="_blank" rel="noopener noreferrer"
-                  className="text-[10px] text-brand-purple font-medium hover:underline">Site</a>
-              )}
-              {selectedVenue.maps_url && (
-                <a href={selectedVenue.maps_url} target="_blank" rel="noopener noreferrer"
-                  className="text-[10px] text-brand-purple font-medium hover:underline">Go</a>
-              )}
-            </div>
-          </div>
-        </InfoWindow>
+        <InfoWindowContent venue={selectedVenue} onClose={onMapClick} />
       )}
     </>
   );
