@@ -191,7 +191,7 @@ export default function MapView(props: MapViewProps) {
 
   if (!apiKey) {
     return (
-      <div className="flex-1 flex items-center justify-center bg-gray-100">
+      <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
         <div className="text-center p-4">
           <div className="text-2xl mb-2">🗺️</div>
           <p className="text-gray-500 text-sm">
@@ -203,7 +203,7 @@ export default function MapView(props: MapViewProps) {
   }
 
   return (
-    <div className="flex-1 min-h-0 md:min-h-0 relative">
+    <div className="absolute inset-0">
       <APIProvider apiKey={apiKey}>
         <Map
           defaultCenter={ATL_CENTER}
