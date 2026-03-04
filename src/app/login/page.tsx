@@ -24,8 +24,9 @@ export default function LoginPage() {
 
     try {
       const supabase = createClient();
+      const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin;
       const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: "https://atlhour.com/auth/confirm",
+        redirectTo: `${siteUrl}/auth/callback?next=/auth/confirm`,
       });
       if (resetError) {
         setError(resetError.message || "Failed to send reset email");
@@ -54,7 +55,7 @@ export default function LoginPage() {
           email,
           password,
           options: {
-            emailRedirectTo: "https://atlhour.com/auth/callback?next=/login",
+            emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || window.location.origin}/auth/callback?next=/login`,
           },
         });
         if (authError) {
