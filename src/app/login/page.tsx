@@ -24,7 +24,7 @@ export default function LoginPage() {
     try {
       const supabase = createClient();
       const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/login`,
+        redirectTo: "https://atlhour.com/login",
       });
       if (resetError) {
         setError(resetError.message || "Failed to send reset email");
@@ -48,12 +48,17 @@ export default function LoginPage() {
       const supabase = createClient();
 
       if (isSignUp) {
-        const { error: authError } = await supabase.auth.signUp({
+        const { data, error: authError } = await supabase.auth.signUp({
           email,
           password,
+          options: {
+            emailRedirectTo: "https://atlhour.com/login",
+          },
         });
         if (authError) {
           setError(authError.message || "Sign up failed");
+        } else if (data.user && data.user.identities?.length === 0) {
+          setError("An account with this email already exists. Try signing in instead.");
         } else {
           setSuccess("Check your email for a confirmation link!");
         }
