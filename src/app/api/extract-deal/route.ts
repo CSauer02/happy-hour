@@ -109,6 +109,7 @@ DO NOT OUTPUT ANYTHING OTHER THAN VALID JSON.`;
       body: JSON.stringify({
         model: "claude-sonnet-4-20250514",
         max_tokens: 1000,
+        temperature: 0,
         messages: [{ role: "user", content }],
       }),
     });
