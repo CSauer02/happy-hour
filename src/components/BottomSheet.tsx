@@ -13,6 +13,7 @@ interface BottomSheetProps {
   onDayChange: (day: DayFilter) => void;
   onHappeningNowToggle: () => void;
   selectedVenueId: number | null;
+  isLocated?: boolean;
 }
 
 export default function BottomSheet({
@@ -23,6 +24,7 @@ export default function BottomSheet({
   onDayChange,
   onHappeningNowToggle,
   selectedVenueId,
+  isLocated,
 }: BottomSheetProps) {
   const contentRef = useRef<HTMLDivElement>(null);
   const [snap, setSnap] = useState<SnapPoint>("peek");
@@ -170,7 +172,7 @@ export default function BottomSheet({
                 </button>
               )}
               <span className="text-[10px] text-gray-400 pl-1 whitespace-nowrap">
-                {venueCount} spot{venueCount !== 1 ? "s" : ""}
+                {venueCount} {isLocated ? `deal${venueCount !== 1 ? "s" : ""} near you` : `spot${venueCount !== 1 ? "s" : ""}`}
               </span>
             </div>
           </div>
