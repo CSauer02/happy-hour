@@ -51,8 +51,9 @@ export async function POST(request: Request) {
       extractedData: ExtractedDeal;
       matchedVenueId?: string | null;
       location?: { lat: number; lng: number; source: string } | null;
+      images?: { base64: string; mediaType: string }[];
     } = await request.json();
-    const { extractedData, matchedVenueId, location } = body;
+    const { extractedData, matchedVenueId, location, images } = body;
 
     // Geocode via Google Places API (server-side key — no referrer restriction)
     const apiKey = process.env.GOOGLE_PLACES_API_KEY;
@@ -178,6 +179,41 @@ export async function POST(request: Request) {
         .single();
       if (error) throw error;
       savedRow = data;
+    }
+
+    // Upload photos to Supabase Storage and record in venue_photos
+    if (images && images.length > 0 && savedRow?.id) {
+      for (const img of images) {
+        try {
+          const ext = img.mediaType.split("/")[1] || "jpeg";
+          const fileName = `${savedRow.id}/${crypto.randomUUID()}.${ext}`;
+          const buffer = Buffer.from(img.base64, "base64");
+
+          const { error: uploadErr } = await admin.storage
+            .from("venue-photos")
+            .upload(fileName, buffer, { contentType: img.mediaType });
+
+          if (uploadErr) {
+            console.error("[Photos] Upload failed:", uploadErr.message);
+            continue;
+          }
+
+          const { error: insertErr } = await admin
+            .from("venue_photos")
+            .insert({
+              venue_id: savedRow.id,
+              storage_path: fileName,
+              media_type: img.mediaType,
+              uploaded_by: user.id,
+            });
+
+          if (insertErr) {
+            console.error("[Photos] DB insert failed:", insertErr.message);
+          }
+        } catch (photoErr) {
+          console.error("[Photos] Failed to process photo:", photoErr);
+        }
+      }
     }
 
     revalidatePath("/");

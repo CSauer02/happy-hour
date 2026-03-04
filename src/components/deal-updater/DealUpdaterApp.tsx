@@ -208,6 +208,17 @@ export default function DealUpdaterApp() {
         ? { lat: photoGps.lat, lng: photoGps.lng, source: "exif" }
         : userLocation;
 
+      // Build base64 images array for photo storage
+      const imagePayloads = [];
+      for (const file of imageFiles) {
+        try {
+          const base64 = await fileToBase64(file);
+          imagePayloads.push({ base64, mediaType: file.type || "image/jpeg" });
+        } catch {
+          // Skip files that fail to encode
+        }
+      }
+
       const res = await fetch("/api/venues", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -215,6 +226,7 @@ export default function DealUpdaterApp() {
           extractedData,
           matchedVenueId: matchedEntry?.id ?? null,
           location,
+          images: imagePayloads.length > 0 ? imagePayloads : undefined,
         }),
       });
       if (!res.ok) {
